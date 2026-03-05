@@ -19,9 +19,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, author, genre, section, imagePath, thumbnailPath } = body;
+    const { title, author, genre, publisher, isbn, section, imagePath, thumbnailPath } = body;
 
-    if (!title || !author || !imagePath || !thumbnailPath) {
+    if (!title || !imagePath || !thumbnailPath) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -31,8 +31,10 @@ export async function POST(request: NextRequest) {
     const book = await prisma.book.create({
       data: {
         title,
-        author,
-        genre: genre || "Unknown",
+        author: author || "",
+        genre: genre || "",
+        publisher: publisher || "",
+        isbn: isbn || "",
         section: section === "Child" ? "Child" : "Adult",
         imagePath,
         thumbnailPath,

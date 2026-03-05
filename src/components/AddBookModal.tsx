@@ -20,6 +20,8 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [genre, setGenre] = useState("");
+  const [publisher, setPublisher] = useState("");
+  const [isbn, setIsbn] = useState("");
   const [section, setSection] = useState<"Child" | "Adult">("Adult");
 
   function reset() {
@@ -32,6 +34,8 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     setTitle("");
     setAuthor("");
     setGenre("");
+    setPublisher("");
+    setIsbn("");
     setSection("Adult");
   }
 
@@ -68,6 +72,8 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
       setTitle(data.title || "");
       setAuthor(data.author || "");
       setGenre(data.genre || "");
+      setPublisher(data.publisher || "");
+      setIsbn(data.isbn || "");
       setSection(data.section === "Child" ? "Child" : "Adult");
 
       if (data.aiError) {
@@ -92,9 +98,11 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title,
+          title: title || "Untitled",
           author,
           genre,
+          publisher,
+          isbn,
           section,
           imagePath,
           thumbnailPath,
@@ -146,7 +154,6 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                 </div>
               )}
 
-              {/* Upload step */}
               {(step === "idle" || step === "uploading") && (
                 <div className="text-center">
                   {step === "idle" && (
@@ -172,68 +179,87 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                     <div className="py-8">
                       <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
                       <p className="text-warm-500 font-medium">Uploading &amp; analyzing…</p>
-                      <p className="text-warm-400 text-xs mt-1">This may take a few seconds</p>
+                      <p className="text-warm-400 text-xs mt-1">AI is reading all text on the cover</p>
                     </div>
                   )}
                 </div>
               )}
 
-              {/* Review form */}
               {(step === "review" || step === "saving") && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {localPreview && (
                     <div className="flex justify-center mb-2">
                       <img
                         src={localPreview}
                         alt="Book cover"
-                        className="h-40 rounded-lg shadow-sm object-cover"
+                        className="h-36 rounded-lg shadow-sm object-cover"
                       />
                     </div>
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium text-warm-700 mb-1">
-                      Title
-                    </label>
+                    <label className="block text-sm font-medium text-warm-700 mb-1">Title</label>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       disabled={step === "saving"}
+                      placeholder="Book title"
                       className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-warm-700 mb-1">
-                      Author
-                    </label>
+                    <label className="block text-sm font-medium text-warm-700 mb-1">Author</label>
                     <input
                       type="text"
                       value={author}
                       onChange={(e) => setAuthor(e.target.value)}
                       disabled={step === "saving"}
+                      placeholder="Author name"
                       className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
                     />
                   </div>
 
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-warm-700 mb-1">Genre</label>
+                      <input
+                        type="text"
+                        value={genre}
+                        onChange={(e) => setGenre(e.target.value)}
+                        disabled={step === "saving"}
+                        placeholder="e.g. Fiction"
+                        className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-warm-700 mb-1">Publisher</label>
+                      <input
+                        type="text"
+                        value={publisher}
+                        onChange={(e) => setPublisher(e.target.value)}
+                        disabled={step === "saving"}
+                        placeholder="e.g. Gallimard"
+                        className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+
                   <div>
-                    <label className="block text-sm font-medium text-warm-700 mb-1">
-                      Genre
-                    </label>
+                    <label className="block text-sm font-medium text-warm-700 mb-1">ISBN / Serial Number</label>
                     <input
                       type="text"
-                      value={genre}
-                      onChange={(e) => setGenre(e.target.value)}
+                      value={isbn}
+                      onChange={(e) => setIsbn(e.target.value)}
                       disabled={step === "saving"}
+                      placeholder="e.g. 978-2-07-036822-8"
                       className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-warm-700 mb-1">
-                      Section
-                    </label>
+                    <label className="block text-sm font-medium text-warm-700 mb-1">Section</label>
                     <div className="flex gap-2">
                       <button
                         type="button"
@@ -272,7 +298,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                     </button>
                     <button
                       onClick={handleSave}
-                      disabled={step === "saving" || !title.trim()}
+                      disabled={step === "saving"}
                       className="flex-1 py-2.5 rounded-lg font-semibold bg-accent hover:bg-accent-light text-white transition-colors disabled:opacity-50"
                     >
                       {step === "saving" ? "Saving…" : "Save Book"}

@@ -20,6 +20,8 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
   const [title, setTitle] = useState(book.title);
   const [author, setAuthor] = useState(book.author);
   const [genre, setGenre] = useState(book.genre);
+  const [publisher, setPublisher] = useState(book.publisher);
+  const [isbn, setIsbn] = useState(book.isbn);
   const [section, setSection] = useState(book.section);
 
   async function handleSave() {
@@ -29,7 +31,7 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
       const res = await fetch(`/api/books/${book.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, author, genre, section }),
+        body: JSON.stringify({ title, author, genre, publisher, isbn, section }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -65,6 +67,8 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
     setTitle(book.title);
     setAuthor(book.author);
     setGenre(book.genre);
+    setPublisher(book.publisher);
+    setIsbn(book.isbn);
     setSection(book.section);
     setEditing(false);
     setError(null);
@@ -75,7 +79,6 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-warm-200">
           <h2 className="text-lg font-bold text-warm-800">
             {editing ? "Edit Book" : "Book Details"}
@@ -96,7 +99,6 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
             </div>
           )}
 
-          {/* Full-size image */}
           <div className="flex justify-center">
             <img
               src={getImageSrc(book.imagePath)}
@@ -106,91 +108,85 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
           </div>
 
           {editing ? (
-            /* Edit form */
             <div className="space-y-3">
               <div>
                 <label className="block text-sm font-medium text-warm-700 mb-1">Title</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  disabled={busy}
-                  className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                />
+                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={busy}
+                  className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-warm-700 mb-1">Author</label>
-                <input
-                  type="text"
-                  value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
-                  disabled={busy}
-                  className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                />
+                <input type="text" value={author} onChange={(e) => setAuthor(e.target.value)} disabled={busy}
+                  className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-warm-700 mb-1">Genre</label>
+                  <input type="text" value={genre} onChange={(e) => setGenre(e.target.value)} disabled={busy}
+                    className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-warm-700 mb-1">Publisher</label>
+                  <input type="text" value={publisher} onChange={(e) => setPublisher(e.target.value)} disabled={busy}
+                    className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
+                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-warm-700 mb-1">Genre</label>
-                <input
-                  type="text"
-                  value={genre}
-                  onChange={(e) => setGenre(e.target.value)}
-                  disabled={busy}
-                  className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                />
+                <label className="block text-sm font-medium text-warm-700 mb-1">ISBN / Serial Number</label>
+                <input type="text" value={isbn} onChange={(e) => setIsbn(e.target.value)} disabled={busy}
+                  className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-warm-700 mb-1">Section</label>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSection("Adult")}
-                    disabled={busy}
-                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-                      section === "Adult"
-                        ? "bg-warm-700 text-white"
-                        : "bg-warm-100 text-warm-600 hover:bg-warm-200"
-                    } disabled:opacity-50`}
-                  >
+                  <button type="button" onClick={() => setSection("Adult")} disabled={busy}
+                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${section === "Adult" ? "bg-warm-700 text-white" : "bg-warm-100 text-warm-600 hover:bg-warm-200"} disabled:opacity-50`}>
                     Adult
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => setSection("Child")}
-                    disabled={busy}
-                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-                      section === "Child"
-                        ? "bg-warm-700 text-white"
-                        : "bg-warm-100 text-warm-600 hover:bg-warm-200"
-                    } disabled:opacity-50`}
-                  >
+                  <button type="button" onClick={() => setSection("Child")} disabled={busy}
+                    className={`flex-1 py-2 rounded-lg font-medium transition-colors ${section === "Child" ? "bg-warm-700 text-white" : "bg-warm-100 text-warm-600 hover:bg-warm-200"} disabled:opacity-50`}>
                     Child
                   </button>
                 </div>
               </div>
               <div className="flex gap-3 pt-2">
-                <button
-                  onClick={handleCancel}
-                  disabled={busy}
-                  className="flex-1 py-2.5 rounded-lg font-medium bg-warm-100 text-warm-600 hover:bg-warm-200 transition-colors disabled:opacity-50"
-                >
+                <button onClick={handleCancel} disabled={busy}
+                  className="flex-1 py-2.5 rounded-lg font-medium bg-warm-100 text-warm-600 hover:bg-warm-200 transition-colors disabled:opacity-50">
                   Cancel
                 </button>
-                <button
-                  onClick={handleSave}
-                  disabled={busy || !title.trim()}
-                  className="flex-1 py-2.5 rounded-lg font-semibold bg-accent hover:bg-accent-light text-white transition-colors disabled:opacity-50"
-                >
+                <button onClick={handleSave} disabled={busy || !title.trim()}
+                  className="flex-1 py-2.5 rounded-lg font-semibold bg-accent hover:bg-accent-light text-white transition-colors disabled:opacity-50">
                   {saving ? "Saving…" : "Save"}
                 </button>
               </div>
             </div>
           ) : (
-            /* View mode */
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-warm-800">{book.title}</h3>
               <p className="text-warm-600">{book.author}</p>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-warm-400">{book.genre}</span>
+
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm pt-1">
+                {book.genre && (
+                  <div>
+                    <span className="text-warm-400">Genre: </span>
+                    <span className="text-warm-600">{book.genre}</span>
+                  </div>
+                )}
+                {book.publisher && (
+                  <div>
+                    <span className="text-warm-400">Publisher: </span>
+                    <span className="text-warm-600">{book.publisher}</span>
+                  </div>
+                )}
+                {book.isbn && (
+                  <div className="col-span-2">
+                    <span className="text-warm-400">ISBN: </span>
+                    <span className="text-warm-600 font-mono text-xs">{book.isbn}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2 text-sm pt-1">
                 <span
                   className={`px-2 py-0.5 rounded-full font-medium ${
                     book.section === "Child"
@@ -211,26 +207,18 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
                 </button>
                 {confirmDelete ? (
                   <div className="flex-1 flex gap-2">
-                    <button
-                      onClick={() => setConfirmDelete(false)}
-                      disabled={deleting}
-                      className="flex-1 py-2.5 rounded-lg font-medium bg-warm-100 text-warm-600 hover:bg-warm-200 transition-colors disabled:opacity-50"
-                    >
+                    <button onClick={() => setConfirmDelete(false)} disabled={deleting}
+                      className="flex-1 py-2.5 rounded-lg font-medium bg-warm-100 text-warm-600 hover:bg-warm-200 transition-colors disabled:opacity-50">
                       No
                     </button>
-                    <button
-                      onClick={handleDelete}
-                      disabled={deleting}
-                      className="flex-1 py-2.5 rounded-lg font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50"
-                    >
+                    <button onClick={handleDelete} disabled={deleting}
+                      className="flex-1 py-2.5 rounded-lg font-semibold bg-red-600 hover:bg-red-700 text-white transition-colors disabled:opacity-50">
                       {deleting ? "Deleting…" : "Yes, Delete"}
                     </button>
                   </div>
                 ) : (
-                  <button
-                    onClick={() => setConfirmDelete(true)}
-                    className="flex-1 py-2.5 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors"
-                  >
+                  <button onClick={() => setConfirmDelete(true)}
+                    className="flex-1 py-2.5 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
                     Delete
                   </button>
                 )}

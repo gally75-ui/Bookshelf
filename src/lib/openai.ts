@@ -8,6 +8,8 @@ export interface BookMetadata {
   title: string;
   author: string;
   genre: string;
+  publisher: string;
+  isbn: string;
   section: "Child" | "Adult";
 }
 
@@ -29,18 +31,22 @@ export async function analyzeBookCover(
           },
           {
             type: "text",
-            text: `Analyze this book cover or title page. Return ONLY a JSON object with these fields:
+            text: `You are a book identification expert. Carefully read ALL text visible in this image (front cover, back cover, spine, title page, etc.).
+
+From the extracted text, identify and categorize:
 - "title": the book title
-- "author": the author name
-- "genre": the genre/category (e.g. "Fiction", "Science Fiction", "Children's Fiction", "Biography", "Cookbook", etc.)
+- "author": the author name(s)
+- "genre": the genre or category (e.g. "Fiction", "Science Fiction", "Children's Fiction", "Biography", "Cookbook", "Thriller", "Romance", etc.)
+- "publisher": the publisher / publishing house name (e.g. "Penguin", "Hachette", "Gallimard", "Flammarion", etc.)
+- "isbn": any ISBN, EAN, or serial number visible (e.g. "978-2-07-036822-8")
 - "section": either "Child" or "Adult" based on whether this is a children's book
 
-If you cannot determine a field, use "Unknown" as the value. Return only the raw JSON, no markdown fences.`,
+Return ONLY a JSON object with these 6 fields. If you cannot determine a field, use an empty string "". Return only the raw JSON, no markdown fences.`,
           },
         ],
       },
     ],
-    max_tokens: 300,
+    max_tokens: 500,
   });
 
   const text = response.choices[0]?.message?.content?.trim();
@@ -52,9 +58,11 @@ If you cannot determine a field, use "Unknown" as the value. Return only the raw
     const cleaned = text.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
     const parsed = JSON.parse(cleaned);
     return {
-      title: parsed.title || "Unknown",
-      author: parsed.author || "Unknown",
-      genre: parsed.genre || "Unknown",
+      title: parsed.title || "",
+      author: parsed.author || "",
+      genre: parsed.genre || "",
+      publisher: parsed.publisher || "",
+      isbn: parsed.isbn || "",
       section: parsed.section === "Child" ? "Child" : "Adult",
     };
   } catch {

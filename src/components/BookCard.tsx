@@ -6,6 +6,7 @@ interface BookCardProps {
   id: string;
   title: string;
   author: string;
+  publisher: string;
   genre: string;
   section: string;
   thumbnailPath: string;
@@ -16,6 +17,7 @@ export default function BookCard({
   id,
   title,
   author,
+  publisher,
   genre,
   section,
   thumbnailPath,
@@ -38,6 +40,9 @@ export default function BookCard({
           {title}
         </h3>
         <p className="text-warm-500 text-xs mt-1 truncate">{author}</p>
+        {publisher && (
+          <p className="text-warm-400 text-xs truncate">{publisher}</p>
+        )}
         <div className="flex items-center gap-2 mt-2">
           <span className="text-xs text-warm-400 truncate">{genre}</span>
           <span

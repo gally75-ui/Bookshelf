@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, author, genre, section } = body;
+    const { title, author, genre, publisher, isbn, section } = body;
 
     const book = await prisma.book.update({
       where: { id },
@@ -17,6 +17,8 @@ export async function PUT(
         ...(title !== undefined && { title }),
         ...(author !== undefined && { author }),
         ...(genre !== undefined && { genre }),
+        ...(publisher !== undefined && { publisher }),
+        ...(isbn !== undefined && { isbn }),
         ...(section !== undefined && {
           section: section === "Child" ? "Child" : "Adult",
         }),

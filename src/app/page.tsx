@@ -47,7 +47,9 @@ export default function Home() {
         q &&
         !book.title.toLowerCase().includes(q) &&
         !book.author.toLowerCase().includes(q) &&
-        !book.genre.toLowerCase().includes(q)
+        !book.genre.toLowerCase().includes(q) &&
+        !book.publisher.toLowerCase().includes(q) &&
+        !book.isbn.toLowerCase().includes(q)
       )
         return false;
       return true;
