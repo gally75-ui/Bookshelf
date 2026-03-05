@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     });
 
     const base64 = buffer.toString("base64");
-    let metadata = { title: "", author: "", genre: "", section: "Adult" as const };
+    let metadata: { title: string; author: string; genre: string; section: "Child" | "Adult" } = { title: "", author: "", genre: "", section: "Adult" };
     try {
       metadata = await analyzeBookCover(base64, contentType);
     } catch (err) {
