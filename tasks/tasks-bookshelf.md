@@ -53,16 +53,16 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 2.3 Run the initial migration (`npx prisma migrate dev --name init`)
   - [x] 2.4 Create the Prisma client singleton in `src/lib/db.ts`
 
-- [ ] 3.0 Image upload and thumbnail generation
-  - [ ] 3.1 Create `src/lib/thumbnails.ts` — a utility function that takes an image buffer and returns a resized thumbnail buffer using sharp
-  - [ ] 3.2 Create `src/app/api/upload/route.ts` — accepts a multipart image upload, saves the original to `public/uploads/`, generates a thumbnail, saves it to `public/uploads/thumbs/`, and returns both file paths
-  - [ ] 3.3 Ensure the upload directory and thumbs subdirectory are created automatically if they don't exist
+- [x] 3.0 Image upload and thumbnail generation
+  - [x] 3.1 Create `src/lib/thumbnails.ts` — a utility function that takes an image buffer and returns a resized thumbnail buffer using sharp
+  - [x] 3.2 Create `src/app/api/upload/route.ts` — accepts a multipart image upload, saves the original to `public/uploads/`, generates a thumbnail, saves it to `public/uploads/thumbs/`, and returns both file paths
+  - [x] 3.3 Ensure the upload directory and thumbs subdirectory are created automatically if they don't exist
 
-- [ ] 4.0 OpenAI Vision integration
-  - [ ] 4.1 Create `src/lib/openai.ts` — initialize the OpenAI client using the API key from environment variables
-  - [ ] 4.2 Add an `analyzeBookCover` function that sends an image (as base64 or URL) to GPT-4 Vision and returns structured data: `{ title, author, genre, section }` where section is "Child" or "Adult"
-  - [ ] 4.3 Create `src/app/api/analyze/route.ts` — accepts an image path, calls `analyzeBookCover`, and returns the extracted metadata as JSON
-  - [ ] 4.4 Handle API errors gracefully (rate limits, invalid images) and return meaningful error messages
+- [x] 4.0 OpenAI Vision integration
+  - [x] 4.1 Create `src/lib/openai.ts` — initialize the OpenAI client using the API key from environment variables
+  - [x] 4.2 Add an `analyzeBookCover` function that sends an image (as base64 or URL) to GPT-4 Vision and returns structured data: `{ title, author, genre, section }` where section is "Child" or "Adult"
+  - [x] 4.3 Create `src/app/api/analyze/route.ts` — accepts an image path, calls `analyzeBookCover`, and returns the extracted metadata as JSON
+  - [x] 4.4 Handle API errors gracefully (rate limits, invalid images) and return meaningful error messages
 
 - [ ] 5.0 Book creation flow
   - [ ] 5.1 Create `src/components/AddBookModal.tsx` — a modal triggered by an "Add Book" button with a file input (camera capture + file picker)
