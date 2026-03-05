@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { generateThumbnail } from "@/lib/thumbnails";
-
-const UPLOADS_DIR = path.join(process.cwd(), "public/uploads");
-const THUMBS_DIR = path.join(UPLOADS_DIR, "thumbs");
-
-async function ensureDirs() {
-  await mkdir(UPLOADS_DIR, { recursive: true });
-  await mkdir(THUMBS_DIR, { recursive: true });
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,23 +20,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await ensureDirs();
-
     const buffer = Buffer.from(await file.arrayBuffer());
-    const ext = file.name.split(".").pop() || "jpg";
     const id = randomUUID();
-    const filename = `${id}.${ext}`;
-    const thumbFilename = `${id}.jpg`;
+    const ext = file.name.split(".").pop() || "jpg";
 
-    const imagePath = `/uploads/${filename}`;
-    const thumbnailPath = `/uploads/thumbs/${thumbFilename}`;
-
-    await writeFile(path.join(UPLOADS_DIR, filename), buffer);
+    const imageBlob = await put(`books/${id}.${ext}`, buffer, {
+      access: "public",
+      contentType: file.type,
+    });
 
     const thumbBuffer = await generateThumbnail(buffer);
-    await writeFile(path.join(THUMBS_DIR, thumbFilename), thumbBuffer);
+    const thumbBlob = await put(`books/thumbs/${id}.jpg`, thumbBuffer, {
+      access: "public",
+      contentType: "image/jpeg",
+    });
 
-    return NextResponse.json({ imagePath, thumbnailPath });
+    return NextResponse.json({
+      imagePath: imageBlob.url,
+      thumbnailPath: thumbBlob.url,
+    });
   } catch (error) {
     console.error("Upload failed:", error);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });

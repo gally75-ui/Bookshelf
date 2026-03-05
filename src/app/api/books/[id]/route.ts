@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { unlink } from "fs/promises";
-import path from "path";
+import { del } from "@vercel/blob";
 
 export async function PUT(
   request: NextRequest,
@@ -42,14 +41,9 @@ export async function DELETE(
     const { id } = await params;
     const book = await prisma.book.delete({ where: { id } });
 
-    // Clean up image files
-    const publicDir = path.join(process.cwd(), "public");
     try {
-      await unlink(path.join(publicDir, book.imagePath));
-    } catch { /* file may not exist */ }
-    try {
-      await unlink(path.join(publicDir, book.thumbnailPath));
-    } catch { /* file may not exist */ }
+      await del([book.imagePath, book.thumbnailPath]);
+    } catch { /* blob may not exist */ }
 
     return NextResponse.json({ success: true });
   } catch (error) {

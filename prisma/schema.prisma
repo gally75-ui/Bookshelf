@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Book {
@@ -12,7 +12,7 @@ model Book {
   title         String
   author        String
   genre         String
-  section       String   // "Child" or "Adult"
+  section       String
   imagePath     String
   thumbnailPath String
   createdAt     DateTime @default(now())

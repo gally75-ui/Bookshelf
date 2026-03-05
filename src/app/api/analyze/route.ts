@@ -1,15 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "fs/promises";
-import path from "path";
 import { analyzeBookCover } from "@/lib/openai";
-
-const MIME_MAP: Record<string, string> = {
-  jpg: "image/jpeg",
-  jpeg: "image/jpeg",
-  png: "image/png",
-  webp: "image/webp",
-  heic: "image/heic",
-};
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,23 +12,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const fullPath = path.join(process.cwd(), "public", imagePath);
-    let fileBuffer: Buffer;
-
-    try {
-      fileBuffer = await readFile(fullPath);
-    } catch {
+    const imageRes = await fetch(imagePath);
+    if (!imageRes.ok) {
       return NextResponse.json(
         { error: "Image file not found" },
         { status: 404 }
       );
     }
 
-    const ext = imagePath.split(".").pop()?.toLowerCase() || "jpg";
-    const mimeType = MIME_MAP[ext] || "image/jpeg";
-    const base64 = fileBuffer.toString("base64");
+    const arrayBuffer = await imageRes.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const contentType = imageRes.headers.get("content-type") || "image/jpeg";
 
-    const metadata = await analyzeBookCover(base64, mimeType);
+    const metadata = await analyzeBookCover(base64, contentType);
 
     return NextResponse.json(metadata);
   } catch (error) {
