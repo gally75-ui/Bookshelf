@@ -64,13 +64,13 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 4.3 Create `src/app/api/analyze/route.ts` — accepts an image path, calls `analyzeBookCover`, and returns the extracted metadata as JSON
   - [x] 4.4 Handle API errors gracefully (rate limits, invalid images) and return meaningful error messages
 
-- [ ] 5.0 Book creation flow
-  - [ ] 5.1 Create `src/components/AddBookModal.tsx` — a modal triggered by an "Add Book" button with a file input (camera capture + file picker)
-  - [ ] 5.2 On photo selection, upload the image via the `/api/upload` endpoint and display a loading state
-  - [ ] 5.3 After upload, call `/api/analyze` with the image to get AI-extracted metadata
-  - [ ] 5.4 Display the extracted fields (title, author, genre) in an editable form, with a Child/Adult toggle pre-filled by the AI suggestion
-  - [ ] 5.5 On form submission, POST to `/api/books` to save the book record to the database
-  - [ ] 5.6 Close the modal and refresh the dashboard to show the new book
+- [x] 5.0 Book creation flow
+  - [x] 5.1 Create `src/components/AddBookModal.tsx` — a modal triggered by an "Add Book" button with a file input (camera capture + file picker)
+  - [x] 5.2 On photo selection, upload the image via the `/api/upload` endpoint and display a loading state
+  - [x] 5.3 After upload, call `/api/analyze` with the image to get AI-extracted metadata
+  - [x] 5.4 Display the extracted fields (title, author, genre) in an editable form, with a Child/Adult toggle pre-filled by the AI suggestion
+  - [x] 5.5 On form submission, POST to `/api/books` to save the book record to the database
+  - [x] 5.6 Close the modal and refresh the dashboard to show the new book
 
 - [ ] 6.0 Dashboard UI
   - [ ] 6.1 Create `src/components/SectionTabs.tsx` — tab navigation for All / Child / Adult
