@@ -72,13 +72,13 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 5.5 On form submission, POST to `/api/books` to save the book record to the database
   - [x] 5.6 Close the modal and refresh the dashboard to show the new book
 
-- [ ] 6.0 Dashboard UI
-  - [ ] 6.1 Create `src/components/SectionTabs.tsx` — tab navigation for All / Child / Adult
-  - [ ] 6.2 Create `src/components/SearchBar.tsx` — a sticky search input that filters books in real time by title, author, or genre
-  - [ ] 6.3 Create `src/components/BookCard.tsx` — a card displaying the thumbnail, title, and author
-  - [ ] 6.4 Create `src/components/BookGrid.tsx` — a responsive grid layout that renders BookCard components
-  - [ ] 6.5 Build the main dashboard page (`src/app/page.tsx`) — fetch all books, wire up SectionTabs, SearchBar, and BookGrid together
-  - [ ] 6.6 Implement client-side filtering: search text filters across title/author/genre; section tabs filter by Child/Adult
+- [x] 6.0 Dashboard UI
+  - [x] 6.1 Create `src/components/SectionTabs.tsx` — tab navigation for All / Child / Adult
+  - [x] 6.2 Create `src/components/SearchBar.tsx` — a sticky search input that filters books in real time by title, author, or genre
+  - [x] 6.3 Create `src/components/BookCard.tsx` — a card displaying the thumbnail, title, and author
+  - [x] 6.4 Create `src/components/BookGrid.tsx` — a responsive grid layout that renders BookCard components
+  - [x] 6.5 Build the main dashboard page (`src/app/page.tsx`) — fetch all books, wire up SectionTabs, SearchBar, and BookGrid together
+  - [x] 6.6 Implement client-side filtering: search text filters across title/author/genre; section tabs filter by Child/Adult
 
 - [ ] 7.0 Book detail, edit, and delete functionality
   - [ ] 7.1 Create `src/components/BookDetail.tsx` — a detail/edit view (modal or slide-over) showing the full-size image and all editable fields including a Child/Adult override toggle
