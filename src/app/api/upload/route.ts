@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { generateThumbnail } from "@/lib/thumbnails";
+import { analyzeBookCover } from "@/lib/openai";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,21 +23,30 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const id = randomUUID();
     const ext = file.name.split(".").pop() || "jpg";
+    const contentType = file.type || "image/jpeg";
 
-    const imageBlob = await put(`books/${id}.${ext}`, buffer, {
-      access: "private",
-      contentType: file.type || "image/jpeg",
-    });
+    const [imageBlob, thumbBuffer] = await Promise.all([
+      put(`books/${id}.${ext}`, buffer, { access: "private", contentType }),
+      generateThumbnail(buffer),
+    ]);
 
-    const thumbBuffer = await generateThumbnail(buffer);
     const thumbBlob = await put(`books/thumbs/${id}.jpg`, thumbBuffer, {
       access: "private",
       contentType: "image/jpeg",
     });
 
+    const base64 = buffer.toString("base64");
+    let metadata = { title: "", author: "", genre: "", section: "Adult" as const };
+    try {
+      metadata = await analyzeBookCover(base64, contentType);
+    } catch (err) {
+      console.error("AI analysis failed (non-blocking):", err);
+    }
+
     return NextResponse.json({
       imagePath: imageBlob.url,
       thumbnailPath: thumbBlob.url,
+      ...metadata,
     });
   } catch (error) {
     console.error("Upload failed:", error);

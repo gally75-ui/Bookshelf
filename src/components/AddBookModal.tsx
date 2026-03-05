@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { getImageSrc } from "@/lib/image-url";
 
-type Step = "idle" | "uploading" | "analyzing" | "review" | "saving";
+type Step = "idle" | "uploading" | "review" | "saving";
 
 interface AddBookModalProps {
   onBookAdded: () => void;
@@ -44,7 +44,6 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
 
     setError(null);
 
-    // Step 1: Upload
     setStep("uploading");
     try {
       const formData = new FormData();
@@ -60,30 +59,14 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
         throw new Error(data.error || "Upload failed");
       }
 
-      const { imagePath: img, thumbnailPath: thumb } = await uploadRes.json();
-      setImagePath(img);
-      setThumbnailPath(thumb);
+      const data = await uploadRes.json();
+      setImagePath(data.imagePath);
+      setThumbnailPath(data.thumbnailPath);
+      setTitle(data.title || "");
+      setAuthor(data.author || "");
+      setGenre(data.genre || "");
+      setSection(data.section === "Child" ? "Child" : "Adult");
 
-      // Step 2: Analyze
-      setStep("analyzing");
-      const analyzeRes = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imagePath: img }),
-      });
-
-      if (!analyzeRes.ok) {
-        const data = await analyzeRes.json();
-        throw new Error(data.error || "Analysis failed");
-      }
-
-      const metadata = await analyzeRes.json();
-      setTitle(metadata.title || "");
-      setAuthor(metadata.author || "");
-      setGenre(metadata.genre || "");
-      setSection(metadata.section === "Child" ? "Child" : "Adult");
-
-      // Step 3: Show review form
       setStep("review");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -124,7 +107,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     }
   }
 
-  const isProcessing = step === "uploading" || step === "analyzing" || step === "saving";
+  const isProcessing = step === "uploading" || step === "saving";
 
   return (
     <>
@@ -157,7 +140,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
               )}
 
               {/* Upload step */}
-              {(step === "idle" || step === "uploading" || step === "analyzing") && (
+              {(step === "idle" || step === "uploading") && (
                 <div className="text-center">
                   {step === "idle" && (
                     <>
@@ -181,14 +164,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                   {step === "uploading" && (
                     <div className="py-8">
                       <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
-                      <p className="text-warm-500">Uploading image…</p>
-                    </div>
-                  )}
-
-                  {step === "analyzing" && (
-                    <div className="py-8">
-                      <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
-                      <p className="text-warm-500 font-medium">Analyzing book cover with AI…</p>
+                      <p className="text-warm-500 font-medium">Uploading &amp; analyzing…</p>
                       <p className="text-warm-400 text-xs mt-1">This may take a few seconds</p>
                     </div>
                   )}
