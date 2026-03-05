@@ -47,11 +47,11 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 1.5 Set up the project folder structure (`src/app`, `src/components`, `src/lib`, `public/uploads`)
   - [x] 1.6 Create the root layout (`src/app/layout.tsx`) with global styles and a clean font
 
-- [ ] 2.0 Database schema and data model
-  - [ ] 2.1 Initialize Prisma with SQLite (`npx prisma init --datasource-provider sqlite`)
-  - [ ] 2.2 Define the `Book` model in `prisma/schema.prisma` with fields: `id`, `title`, `author`, `genre`, `section` (Child/Adult), `imagePath`, `thumbnailPath`, `createdAt`, `updatedAt`
-  - [ ] 2.3 Run the initial migration (`npx prisma migrate dev --name init`)
-  - [ ] 2.4 Create the Prisma client singleton in `src/lib/db.ts`
+- [x] 2.0 Database schema and data model
+  - [x] 2.1 Initialize Prisma with SQLite (`npx prisma init --datasource-provider sqlite`)
+  - [x] 2.2 Define the `Book` model in `prisma/schema.prisma` with fields: `id`, `title`, `author`, `genre`, `section` (Child/Adult), `imagePath`, `thumbnailPath`, `createdAt`, `updatedAt`
+  - [x] 2.3 Run the initial migration (`npx prisma migrate dev --name init`)
+  - [x] 2.4 Create the Prisma client singleton in `src/lib/db.ts`
 
 - [ ] 3.0 Image upload and thumbnail generation
   - [ ] 3.1 Create `src/lib/thumbnails.ts` — a utility function that takes an image buffer and returns a resized thumbnail buffer using sharp
