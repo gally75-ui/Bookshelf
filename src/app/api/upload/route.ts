@@ -12,10 +12,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No image provided" }, { status: 400 });
     }
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/heic"];
-    if (!allowedTypes.includes(file.type)) {
+    if (file.type && !file.type.startsWith("image/")) {
       return NextResponse.json(
-        { error: "Unsupported image type. Use JPEG, PNG, WebP, or HEIC." },
+        { error: "Please upload an image file." },
         { status: 400 }
       );
     }
