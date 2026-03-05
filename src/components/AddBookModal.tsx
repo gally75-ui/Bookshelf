@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { getImageSrc } from "@/lib/image-url";
 
 type Step = "idle" | "uploading" | "review" | "saving";
 
@@ -17,6 +16,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
 
   const [imagePath, setImagePath] = useState("");
   const [thumbnailPath, setThumbnailPath] = useState("");
+  const [localPreview, setLocalPreview] = useState("");
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
   const [genre, setGenre] = useState("");
@@ -27,6 +27,8 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     setError(null);
     setImagePath("");
     setThumbnailPath("");
+    if (localPreview) URL.revokeObjectURL(localPreview);
+    setLocalPreview("");
     setTitle("");
     setAuthor("");
     setGenre("");
@@ -43,6 +45,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     if (!file) return;
 
     setError(null);
+    setLocalPreview(URL.createObjectURL(file));
 
     setStep("uploading");
     try {
@@ -66,6 +69,10 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
       setAuthor(data.author || "");
       setGenre(data.genre || "");
       setSection(data.section === "Child" ? "Child" : "Adult");
+
+      if (data.aiError) {
+        setError(`AI could not read the cover: ${data.aiError}. Fill in the fields manually.`);
+      }
 
       setStep("review");
     } catch (err) {
@@ -174,10 +181,10 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
               {/* Review form */}
               {(step === "review" || step === "saving") && (
                 <div className="space-y-4">
-                  {thumbnailPath && (
+                  {localPreview && (
                     <div className="flex justify-center mb-2">
                       <img
-                        src={getImageSrc(thumbnailPath)}
+                        src={localPreview}
                         alt="Book cover"
                         className="h-40 rounded-lg shadow-sm object-cover"
                       />

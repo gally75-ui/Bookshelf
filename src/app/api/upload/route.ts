@@ -37,16 +37,19 @@ export async function POST(request: NextRequest) {
 
     const base64 = buffer.toString("base64");
     let metadata: { title: string; author: string; genre: string; section: "Child" | "Adult" } = { title: "", author: "", genre: "", section: "Adult" };
+    let aiError: string | null = null;
     try {
       metadata = await analyzeBookCover(base64, contentType);
     } catch (err) {
-      console.error("AI analysis failed (non-blocking):", err);
+      console.error("AI analysis failed:", err);
+      aiError = err instanceof Error ? err.message : "AI analysis failed";
     }
 
     return NextResponse.json({
       imagePath: imageBlob.url,
       thumbnailPath: thumbBlob.url,
       ...metadata,
+      aiError,
     });
   } catch (error) {
     console.error("Upload failed:", error);

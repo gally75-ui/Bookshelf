@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeBookCover } from "@/lib/openai";
-import { getDownloadUrl } from "@vercel/blob";
+import { get } from "@vercel/blob";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,18 +13,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const downloadUrl = await getDownloadUrl(imagePath);
-    const imageRes = await fetch(downloadUrl);
-    if (!imageRes.ok) {
+    const result = await get(imagePath, { access: "private" });
+    if (result?.statusCode !== 200 || !result.stream) {
       return NextResponse.json(
         { error: "Image file not found" },
         { status: 404 }
       );
     }
 
-    const arrayBuffer = await imageRes.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
-    const contentType = imageRes.headers.get("content-type") || "image/jpeg";
+    const chunks: Uint8Array[] = [];
+    const reader = result.stream.getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) chunks.push(value);
+    }
+    const buffer = Buffer.concat(chunks);
+    const base64 = buffer.toString("base64");
+    const contentType = result.blob.contentType || "image/jpeg";
 
     const metadata = await analyzeBookCover(base64, contentType);
 
