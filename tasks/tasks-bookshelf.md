@@ -94,9 +94,9 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 8.4 Add toast notifications or inline feedback for success/error states (book saved, upload failed, etc.)
   - [x] 8.5 Polish typography, spacing, and colors to match the warm library-inspired theme
 
-- [ ] 9.0 Deployment (public hosting, shareable URL)
-  - [ ] 9.1 Swap SQLite for a hosted database compatible with Vercel (e.g., Vercel Postgres or Turso) and update Prisma config
-  - [ ] 9.2 Set up Vercel Blob (or similar) for image/thumbnail storage and update upload logic to use it instead of local disk
-  - [ ] 9.3 Configure environment variables (`OPENAI_API_KEY`, database URL, blob store token) in the Vercel project settings
-  - [ ] 9.4 Deploy to Vercel and verify the public URL works end-to-end (upload, AI extraction, dashboard, search, edit, delete)
-  - [ ] 9.5 Share the public dashboard URL
+- [x] 9.0 Deployment (public hosting, shareable URL)
+  - [x] 9.1 Swap SQLite for a hosted database compatible with Vercel (e.g., Vercel Postgres or Turso) and update Prisma config
+  - [x] 9.2 Set up Vercel Blob (or similar) for image/thumbnail storage and update upload logic to use it instead of local disk
+  - [x] 9.3 Configure environment variables (`OPENAI_API_KEY`, database URL, blob store token) in the Vercel project settings
+  - [x] 9.4 Deploy to Vercel and verify the public URL works end-to-end (upload, AI extraction, dashboard, search, edit, delete)
+  - [x] 9.5 Share the public dashboard URL
