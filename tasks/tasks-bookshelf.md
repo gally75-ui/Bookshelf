@@ -39,13 +39,13 @@ Update the file after completing each sub-task, not just after completing an ent
 
 ## Tasks
 
-- [ ] 1.0 Project setup and configuration
-  - [ ] 1.1 Initialize a new Next.js project (App Router, TypeScript) inside the `Bookshelf` directory
-  - [ ] 1.2 Install dependencies: `prisma`, `@prisma/client`, `sharp`, `openai`, and any other needed packages
-  - [ ] 1.3 Set up Tailwind CSS with a warm, library-inspired color palette in `tailwind.config.ts`
-  - [ ] 1.4 Create `.env.local` with a placeholder for `OPENAI_API_KEY`
-  - [ ] 1.5 Set up the project folder structure (`src/app`, `src/components`, `src/lib`, `public/uploads`)
-  - [ ] 1.6 Create the root layout (`src/app/layout.tsx`) with global styles and a clean font
+- [x] 1.0 Project setup and configuration
+  - [x] 1.1 Initialize a new Next.js project (App Router, TypeScript) inside the `Bookshelf` directory
+  - [x] 1.2 Install dependencies: `prisma`, `@prisma/client`, `sharp`, `openai`, and any other needed packages
+  - [x] 1.3 Set up Tailwind CSS with a warm, library-inspired color palette in `tailwind.config.ts`
+  - [x] 1.4 Create `.env.local` with a placeholder for `OPENAI_API_KEY`
+  - [x] 1.5 Set up the project folder structure (`src/app`, `src/components`, `src/lib`, `public/uploads`)
+  - [x] 1.6 Create the root layout (`src/app/layout.tsx`) with global styles and a clean font
 
 - [ ] 2.0 Database schema and data model
   - [ ] 2.1 Initialize Prisma with SQLite (`npx prisma init --datasource-provider sqlite`)
