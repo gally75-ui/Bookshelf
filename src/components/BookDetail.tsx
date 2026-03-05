@@ -6,7 +6,7 @@ import type { Book } from "./BookGrid";
 interface BookDetailProps {
   book: Book;
   onClose: () => void;
-  onUpdated: () => void;
+  onUpdated: (action?: string) => void;
 }
 
 export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps) {
@@ -35,7 +35,7 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
         throw new Error(data.error || "Failed to save");
       }
       setEditing(false);
-      onUpdated();
+      onUpdated("updated");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
@@ -52,7 +52,7 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
         const data = await res.json();
         throw new Error(data.error || "Failed to delete");
       }
-      onUpdated();
+      onUpdated("deleted");
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete");

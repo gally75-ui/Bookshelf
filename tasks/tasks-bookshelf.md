@@ -87,12 +87,12 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 7.4 Add a delete button with a confirmation prompt; on confirm, call DELETE `/api/books/[id]` and refresh the dashboard
   - [x] 7.5 Open the detail view when a BookCard is clicked on the dashboard
 
-- [ ] 8.0 Responsive design and final polish
-  - [ ] 8.1 Test and adjust the card grid for mobile (1 column), tablet (2-3 columns), and desktop (4+ columns)
-  - [ ] 8.2 Ensure the Add Book modal and upload flow work well on mobile (camera capture via `accept="image/*" capture="environment"`)
-  - [ ] 8.3 Add loading spinners/skeletons during image upload and AI analysis
-  - [ ] 8.4 Add toast notifications or inline feedback for success/error states (book saved, upload failed, etc.)
-  - [ ] 8.5 Polish typography, spacing, and colors to match the warm library-inspired theme
+- [x] 8.0 Responsive design and final polish
+  - [x] 8.1 Test and adjust the card grid for mobile (1 column), tablet (2-3 columns), and desktop (4+ columns)
+  - [x] 8.2 Ensure the Add Book modal and upload flow work well on mobile (camera capture via `accept="image/*" capture="environment"`)
+  - [x] 8.3 Add loading spinners/skeletons during image upload and AI analysis
+  - [x] 8.4 Add toast notifications or inline feedback for success/error states (book saved, upload failed, etc.)
+  - [x] 8.5 Polish typography, spacing, and colors to match the warm library-inspired theme
 
 - [ ] 9.0 Deployment (public hosting, shareable URL)
   - [ ] 9.1 Swap SQLite for a hosted database compatible with Vercel (e.g., Vercel Postgres or Turso) and update Prisma config

@@ -136,7 +136,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] sm:max-h-[90vh] h-full sm:h-auto overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-warm-200">
               <h2 className="text-lg font-bold text-warm-800">Add a Book</h2>
               <button
@@ -179,15 +179,16 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
 
                   {step === "uploading" && (
                     <div className="py-8">
-                      <div className="animate-spin w-8 h-8 border-3 border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
+                      <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
                       <p className="text-warm-500">Uploading image…</p>
                     </div>
                   )}
 
                   {step === "analyzing" && (
                     <div className="py-8">
-                      <div className="animate-spin w-8 h-8 border-3 border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
-                      <p className="text-warm-500">Analyzing book cover with AI…</p>
+                      <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
+                      <p className="text-warm-500 font-medium">Analyzing book cover with AI…</p>
+                      <p className="text-warm-400 text-xs mt-1">This may take a few seconds</p>
                     </div>
                   )}
                 </div>
