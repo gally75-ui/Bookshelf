@@ -5,11 +5,18 @@ import AddBookModal from "@/components/AddBookModal";
 import SectionTabs, { type Section } from "@/components/SectionTabs";
 import SearchBar from "@/components/SearchBar";
 import BookGrid, { type Book } from "@/components/BookGrid";
+import BookDetail from "@/components/BookDetail";
 
 export default function Home() {
   const [books, setBooks] = useState<Book[]>([]);
   const [section, setSection] = useState<Section>("All");
   const [search, setSearch] = useState("");
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
+
+  const selectedBook = useMemo(
+    () => books.find((b) => b.id === selectedBookId) || null,
+    [books, selectedBookId]
+  );
 
   const fetchBooks = useCallback(async () => {
     try {
@@ -42,11 +49,6 @@ export default function Home() {
     });
   }, [books, section, search]);
 
-  function handleBookClick(id: string) {
-    // Will be implemented in task 7 (book detail view)
-    console.log("Book clicked:", id);
-  }
-
   return (
     <main className="min-h-screen px-4 py-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
@@ -66,7 +68,15 @@ export default function Home() {
         </div>
       </div>
 
-      <BookGrid books={filtered} onBookClick={handleBookClick} />
+      <BookGrid books={filtered} onBookClick={setSelectedBookId} />
+
+      {selectedBook && (
+        <BookDetail
+          book={selectedBook}
+          onClose={() => setSelectedBookId(null)}
+          onUpdated={fetchBooks}
+        />
+      )}
     </main>
   );
 }

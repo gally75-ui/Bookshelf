@@ -80,12 +80,12 @@ Update the file after completing each sub-task, not just after completing an ent
   - [x] 6.5 Build the main dashboard page (`src/app/page.tsx`) — fetch all books, wire up SectionTabs, SearchBar, and BookGrid together
   - [x] 6.6 Implement client-side filtering: search text filters across title/author/genre; section tabs filter by Child/Adult
 
-- [ ] 7.0 Book detail, edit, and delete functionality
-  - [ ] 7.1 Create `src/components/BookDetail.tsx` — a detail/edit view (modal or slide-over) showing the full-size image and all editable fields including a Child/Adult override toggle
-  - [ ] 7.2 Create `src/app/api/books/[id]/route.ts` — PUT handler to update a book's fields, DELETE handler to remove a book and its images
-  - [ ] 7.3 Wire the edit form to call PUT `/api/books/[id]` on save
-  - [ ] 7.4 Add a delete button with a confirmation prompt; on confirm, call DELETE `/api/books/[id]` and refresh the dashboard
-  - [ ] 7.5 Open the detail view when a BookCard is clicked on the dashboard
+- [x] 7.0 Book detail, edit, and delete functionality
+  - [x] 7.1 Create `src/components/BookDetail.tsx` — a detail/edit view (modal or slide-over) showing the full-size image and all editable fields including a Child/Adult override toggle
+  - [x] 7.2 Create `src/app/api/books/[id]/route.ts` — PUT handler to update a book's fields, DELETE handler to remove a book and its images
+  - [x] 7.3 Wire the edit form to call PUT `/api/books/[id]` on save
+  - [x] 7.4 Add a delete button with a confirmation prompt; on confirm, call DELETE `/api/books/[id]` and refresh the dashboard
+  - [x] 7.5 Open the detail view when a BookCard is clicked on the dashboard
 
 - [ ] 8.0 Responsive design and final polish
   - [ ] 8.1 Test and adjust the card grid for mobile (1 column), tablet (2-3 columns), and desktop (4+ columns)

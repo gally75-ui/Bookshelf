@@ -1,0 +1,62 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { unlink } from "fs/promises";
+import path from "path";
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    const { title, author, genre, section } = body;
+
+    const book = await prisma.book.update({
+      where: { id },
+      data: {
+        ...(title !== undefined && { title }),
+        ...(author !== undefined && { author }),
+        ...(genre !== undefined && { genre }),
+        ...(section !== undefined && {
+          section: section === "Child" ? "Child" : "Adult",
+        }),
+      },
+    });
+
+    return NextResponse.json(book);
+  } catch (error) {
+    console.error("Failed to update book:", error);
+    return NextResponse.json(
+      { error: "Failed to update book" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const book = await prisma.book.delete({ where: { id } });
+
+    // Clean up image files
+    const publicDir = path.join(process.cwd(), "public");
+    try {
+      await unlink(path.join(publicDir, book.imagePath));
+    } catch { /* file may not exist */ }
+    try {
+      await unlink(path.join(publicDir, book.thumbnailPath));
+    } catch { /* file may not exist */ }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to delete book:", error);
+    return NextResponse.json(
+      { error: "Failed to delete book" },
+      { status: 500 }
+    );
+  }
+}
