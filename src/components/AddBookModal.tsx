@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { getImageSrc } from "@/lib/image-url";
 
 type Step = "idle" | "uploading" | "analyzing" | "review" | "saving";
 
@@ -200,7 +201,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                   {thumbnailPath && (
                     <div className="flex justify-center mb-2">
                       <img
-                        src={thumbnailPath}
+                        src={getImageSrc(thumbnailPath)}
                         alt="Book cover"
                         className="h-40 rounded-lg shadow-sm object-cover"
                       />

@@ -24,13 +24,13 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split(".").pop() || "jpg";
 
     const imageBlob = await put(`books/${id}.${ext}`, buffer, {
-      access: "public",
-      contentType: file.type,
+      access: "private",
+      contentType: file.type || "image/jpeg",
     });
 
     const thumbBuffer = await generateThumbnail(buffer);
     const thumbBlob = await put(`books/thumbs/${id}.jpg`, thumbBuffer, {
-      access: "public",
+      access: "private",
       contentType: "image/jpeg",
     });
 

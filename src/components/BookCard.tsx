@@ -1,5 +1,7 @@
 "use client";
 
+import { getImageSrc } from "@/lib/image-url";
+
 interface BookCardProps {
   id: string;
   title: string;
@@ -26,7 +28,7 @@ export default function BookCard({
     >
       <div className="aspect-[3/4] overflow-hidden bg-warm-100">
         <img
-          src={thumbnailPath}
+          src={getImageSrc(thumbnailPath)}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
         />

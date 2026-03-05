@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Book } from "./BookGrid";
+import { getImageSrc } from "@/lib/image-url";
 
 interface BookDetailProps {
   book: Book;
@@ -98,7 +99,7 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
           {/* Full-size image */}
           <div className="flex justify-center">
             <img
-              src={book.imagePath}
+              src={getImageSrc(book.imagePath)}
               alt={book.title}
               className="max-h-64 rounded-lg shadow-sm object-contain"
             />

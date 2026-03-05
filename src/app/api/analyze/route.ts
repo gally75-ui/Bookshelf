@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeBookCover } from "@/lib/openai";
+import { getDownloadUrl } from "@vercel/blob";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +13,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const imageRes = await fetch(imagePath);
+    const downloadUrl = await getDownloadUrl(imagePath);
+    const imageRes = await fetch(downloadUrl);
     if (!imageRes.ok) {
       return NextResponse.json(
         { error: "Image file not found" },
