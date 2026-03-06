@@ -5,6 +5,8 @@ import { generateThumbnail } from "@/lib/thumbnails";
 import { analyzeBookCover } from "@/lib/openai";
 import { lookupIsbn } from "@/lib/isbn-lookup";
 
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();

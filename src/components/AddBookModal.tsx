@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { compressImage } from "@/lib/compress-image";
 
 type Step = "idle" | "uploading" | "review" | "saving";
 
@@ -58,17 +59,32 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
 
     setStep("uploading");
     try {
-      const formData = new FormData();
-      formData.append("image", file);
+      const compressed = await compressImage(file);
 
-      const uploadRes = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+      const formData = new FormData();
+      formData.append("image", compressed);
+
+      let uploadRes: Response;
+      try {
+        uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+      } catch (networkErr) {
+        const sizeMB = (compressed.size / 1024 / 1024).toFixed(1);
+        throw new Error(
+          `Network error (file: ${sizeMB}MB). Check your connection or try a smaller image. ` +
+          `Detail: ${networkErr instanceof Error ? networkErr.message : "Unknown"}`
+        );
+      }
 
       if (!uploadRes.ok) {
-        const data = await uploadRes.json();
-        throw new Error(data.error || "Upload failed");
+        let detail = `HTTP ${uploadRes.status}`;
+        try {
+          const data = await uploadRes.json();
+          detail = data.error || detail;
+        } catch { /* response wasn't JSON */ }
+        throw new Error(`Upload failed: ${detail}`);
       }
 
       const data = await uploadRes.json();
@@ -104,10 +120,16 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     setInfo(null);
 
     try {
-      const res = await fetch(`/api/isbn?isbn=${encodeURIComponent(isbn.trim())}`);
+      let res: Response;
+      try {
+        res = await fetch(`/api/isbn?isbn=${encodeURIComponent(isbn.trim())}`);
+      } catch (networkErr) {
+        throw new Error(`Network error during ISBN lookup: ${networkErr instanceof Error ? networkErr.message : "Check your connection"}`);
+      }
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "ISBN not found");
+        let detail = `HTTP ${res.status}`;
+        try { const d = await res.json(); detail = d.error || detail; } catch { /* not JSON */ }
+        throw new Error(`ISBN lookup failed: ${detail}`);
       }
       const data = await res.json();
       if (data.title) setTitle(data.title);
@@ -127,24 +149,30 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     setError(null);
 
     try {
-      const res = await fetch("/api/books", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: title || "Untitled",
-          author,
-          genre,
-          publisher,
-          isbn,
-          section,
-          imagePath,
-          thumbnailPath,
-        }),
-      });
+      let res: Response;
+      try {
+        res = await fetch("/api/books", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: title || "Untitled",
+            author,
+            genre,
+            publisher,
+            isbn,
+            section,
+            imagePath,
+            thumbnailPath,
+          }),
+        });
+      } catch (networkErr) {
+        throw new Error(`Network error while saving: ${networkErr instanceof Error ? networkErr.message : "Check your connection"}`);
+      }
 
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Failed to save book");
+        let detail = `HTTP ${res.status}`;
+        try { const d = await res.json(); detail = d.error || detail; } catch { /* not JSON */ }
+        throw new Error(`Failed to save: ${detail}`);
       }
 
       onBookAdded();
