@@ -1,6 +1,6 @@
 "use client";
 
-import { getImageSrc } from "@/lib/image-url";
+import { getThumbnail } from "@/lib/image-url";
 
 interface BookCardProps {
   id: string;
@@ -10,7 +10,7 @@ interface BookCardProps {
   volume: string;
   genre: string;
   section: string;
-  thumbnailPath: string;
+  customThumbnailUrl: string;
   onClick: (id: string) => void;
 }
 
@@ -22,9 +22,11 @@ export default function BookCard({
   volume,
   genre,
   section,
-  thumbnailPath,
+  customThumbnailUrl,
   onClick,
 }: BookCardProps) {
+  const thumbSrc = getThumbnail({ customThumbnailUrl, section });
+
   return (
     <button
       onClick={() => onClick(id)}
@@ -32,7 +34,7 @@ export default function BookCard({
     >
       <div className="aspect-[3/4] overflow-hidden bg-warm-100">
         <img
-          src={getImageSrc(thumbnailPath)}
+          src={thumbSrc}
           alt={title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
         />

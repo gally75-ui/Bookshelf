@@ -13,6 +13,7 @@ export interface Book {
   section: string;
   imagePath: string;
   thumbnailPath: string;
+  customThumbnailUrl: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -47,7 +48,7 @@ export default function BookGrid({ books, onBookClick }: BookGridProps) {
           volume={book.volume}
           genre={book.genre}
           section={book.section}
-          thumbnailPath={book.thumbnailPath}
+          customThumbnailUrl={book.customThumbnailUrl}
           onClick={onBookClick}
         />
       ))}

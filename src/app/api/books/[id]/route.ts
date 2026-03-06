@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { title, author, genre, publisher, isbn, volume, section } = body;
+    const { title, author, genre, publisher, isbn, volume, section, customThumbnailUrl } = body;
 
     const book = await prisma.book.update({
       where: { id },
@@ -20,6 +20,7 @@ export async function PUT(
         ...(publisher !== undefined && { publisher }),
         ...(isbn !== undefined && { isbn }),
         ...(volume !== undefined && { volume }),
+        ...(customThumbnailUrl !== undefined && { customThumbnailUrl }),
         ...(section !== undefined && {
           section: section === "Child" ? "Child" : "Adult",
         }),
@@ -45,7 +46,11 @@ export async function DELETE(
     const book = await prisma.book.delete({ where: { id } });
 
     try {
-      await del([book.imagePath, book.thumbnailPath]);
+      const urls = [book.imagePath, book.thumbnailPath];
+      if (book.customThumbnailUrl?.includes(".blob.")) {
+        urls.push(book.customThumbnailUrl);
+      }
+      await del(urls);
     } catch { /* blob may not exist */ }
 
     return NextResponse.json({ success: true });

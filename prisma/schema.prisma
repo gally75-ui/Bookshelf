@@ -16,8 +16,9 @@ model Book {
   isbn          String   @default("")
   volume        String   @default("")
   section       String
-  imagePath     String
-  thumbnailPath String
+  imagePath          String
+  thumbnailPath      String
+  customThumbnailUrl String   @default("")
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 }
