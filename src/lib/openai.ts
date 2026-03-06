@@ -1,8 +1,6 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 export interface BookMetadata {
   title: string;
@@ -17,21 +15,17 @@ export async function analyzeBookCover(
   base64Image: string,
   mimeType: string = "image/jpeg"
 ): Promise<BookMetadata> {
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "image_url",
-            image_url: {
-              url: `data:${mimeType};base64,${base64Image}`,
-            },
-          },
-          {
-            type: "text",
-            text: `You are a book identification expert. Carefully read ALL text visible in this image (front cover, back cover, spine, title page, etc.).
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  const result = await model.generateContent([
+    {
+      inlineData: {
+        data: base64Image,
+        mimeType,
+      },
+    },
+    {
+      text: `You are a book identification expert. Carefully read ALL text visible in this image (front cover, back cover, spine, title page, etc.).
 
 From the extracted text, identify and categorize:
 - "title": the book title
@@ -42,16 +36,12 @@ From the extracted text, identify and categorize:
 - "section": either "Child" or "Adult" based on whether this is a children's book
 
 Return ONLY a JSON object with these 6 fields. If you cannot determine a field, use an empty string "". Return only the raw JSON, no markdown fences.`,
-          },
-        ],
-      },
-    ],
-    max_tokens: 500,
-  });
+    },
+  ]);
 
-  const text = response.choices[0]?.message?.content?.trim();
+  const text = result.response.text().trim();
   if (!text) {
-    throw new Error("No response from OpenAI Vision");
+    throw new Error("No response from Gemini");
   }
 
   try {
