@@ -3,13 +3,15 @@
 import { useState, useRef } from "react";
 import { compressImage } from "@/lib/compress-image";
 
-type Step = "idle" | "uploading" | "review" | "saving";
+type Mode = "scan" | "manual";
+type Step = "idle" | "uploading" | "form" | "saving";
 
 interface AddBookModalProps {
+  mode: Mode;
   onBookAdded: () => void;
 }
 
-export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
+export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +46,11 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     setLookingUp(false);
   }
 
+  function handleOpen() {
+    setOpen(true);
+    if (mode === "manual") setStep("form");
+  }
+
   function handleClose() {
     setOpen(false);
     reset();
@@ -56,20 +63,17 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     setError(null);
     setInfo(null);
     setLocalPreview(URL.createObjectURL(file));
-
     setStep("uploading");
+
     try {
       const compressed = await compressImage(file);
-
       const formData = new FormData();
       formData.append("image", compressed);
+      if (mode === "manual") formData.append("analyze", "false");
 
       let uploadRes: Response;
       try {
-        uploadRes = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
+        uploadRes = await fetch("/api/upload", { method: "POST", body: formData });
       } catch (networkErr) {
         const sizeMB = (compressed.size / 1024 / 1024).toFixed(1);
         throw new Error(
@@ -80,34 +84,32 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
 
       if (!uploadRes.ok) {
         let detail = `HTTP ${uploadRes.status}`;
-        try {
-          const data = await uploadRes.json();
-          detail = data.error || detail;
-        } catch { /* response wasn't JSON */ }
+        try { const d = await uploadRes.json(); detail = d.error || detail; } catch { /* not JSON */ }
         throw new Error(`Upload failed: ${detail}`);
       }
 
       const data = await uploadRes.json();
       setImagePath(data.imagePath);
       setThumbnailPath(data.thumbnailPath);
-      setTitle(data.title || "");
-      setAuthor(data.author || "");
-      setGenre(data.genre || "");
-      setPublisher(data.publisher || "");
-      setIsbn(data.isbn || "");
-      setSection(data.section === "Child" ? "Child" : "Adult");
 
-      if (data.isbnSource) {
-        setInfo(`Enriched from ${data.isbnSource}`);
-      }
-      if (data.aiError) {
-        setError(`AI could not read the cover: ${data.aiError}. You can type an ISBN below to look up the book.`);
+      if (mode === "scan") {
+        setTitle(data.title || "");
+        setAuthor(data.author || "");
+        setGenre(data.genre || "");
+        setPublisher(data.publisher || "");
+        setIsbn(data.isbn || "");
+        setSection(data.section === "Child" ? "Child" : "Adult");
+
+        if (data.isbnSource) setInfo(`Enriched from ${data.isbnSource}`);
+        if (data.aiError) {
+          setError(`AI could not read the cover: ${data.aiError}. You can type an ISBN below or fill in the fields manually.`);
+        }
       }
 
-      setStep("review");
+      setStep("form");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-      setStep("idle");
+      setStep(mode === "manual" ? "form" : "idle");
     }
 
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -124,7 +126,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
       try {
         res = await fetch(`/api/isbn?isbn=${encodeURIComponent(isbn.trim())}`);
       } catch (networkErr) {
-        throw new Error(`Network error during ISBN lookup: ${networkErr instanceof Error ? networkErr.message : "Check your connection"}`);
+        throw new Error(`Network error: ${networkErr instanceof Error ? networkErr.message : "Check your connection"}`);
       }
       if (!res.ok) {
         let detail = `HTTP ${res.status}`;
@@ -179,27 +181,35 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
       handleClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
-      setStep("review");
+      setStep("form");
     }
   }
 
   const isProcessing = step === "uploading" || step === "saving";
   const inputCls = "w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50";
 
+  const isScan = mode === "scan";
+  const btnLabel = isScan ? "Scan Cover" : "Add Manually";
+  const btnClass = isScan
+    ? "bg-accent hover:bg-accent-light text-white"
+    : "bg-warm-100 hover:bg-warm-200 text-warm-700 border border-warm-300";
+
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
-        className="bg-accent hover:bg-accent-light text-white font-semibold px-5 py-2.5 rounded-lg transition-colors"
+        onClick={handleOpen}
+        className={`font-semibold px-4 py-2.5 rounded-lg transition-colors text-sm ${btnClass}`}
       >
-        + Add Book
+        {btnLabel}
       </button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] sm:max-h-[90vh] h-full sm:h-auto overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] h-full sm:h-auto overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-warm-200">
-              <h2 className="text-lg font-bold text-warm-800">Add a Book</h2>
+              <h2 className="text-lg font-bold text-warm-800">
+                {isScan ? "Scan Book Cover" : "Add Book Manually"}
+              </h2>
               <button
                 onClick={handleClose}
                 disabled={isProcessing}
@@ -221,15 +231,51 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                 </div>
               )}
 
-              {(step === "idle" || step === "uploading") && (
+              {/* Scan mode: photo picker */}
+              {isScan && step === "idle" && (
                 <div className="text-center">
-                  {step === "idle" && (
-                    <>
-                      <p className="text-warm-500 mb-4">
-                        Take a photo or upload an image of your book cover.
-                      </p>
-                      <label className="inline-block cursor-pointer bg-warm-100 hover:bg-warm-200 text-warm-700 font-medium px-6 py-3 rounded-lg transition-colors">
-                        Choose Photo
+                  <p className="text-warm-500 mb-4">
+                    Upload a photo of the book cover. AI will read the text and fill in the details.
+                  </p>
+                  <label className="inline-block cursor-pointer bg-warm-100 hover:bg-warm-200 text-warm-700 font-medium px-6 py-3 rounded-lg transition-colors">
+                    Choose Photo
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              )}
+
+              {/* Uploading spinner */}
+              {step === "uploading" && (
+                <div className="text-center py-8">
+                  <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
+                  <p className="text-warm-500 font-medium">
+                    {isScan ? "Uploading & analyzing…" : "Uploading image…"}
+                  </p>
+                  {isScan && (
+                    <p className="text-warm-400 text-xs mt-1">AI + public book databases</p>
+                  )}
+                </div>
+              )}
+
+              {/* Form */}
+              {(step === "form" || step === "saving") && (
+                <div className="space-y-3">
+                  {/* Photo section */}
+                  {localPreview ? (
+                    <div className="flex justify-center mb-2">
+                      <img src={localPreview} alt="Book cover" className="h-36 rounded-lg shadow-sm object-cover" />
+                    </div>
+                  ) : (
+                    <div className="text-center mb-2">
+                      <label className="inline-block cursor-pointer bg-warm-50 hover:bg-warm-100 text-warm-500 text-sm font-medium px-4 py-2 rounded-lg border border-dashed border-warm-300 transition-colors">
+                        + Add cover photo (optional)
                         <input
                           ref={fileInputRef}
                           type="file"
@@ -239,48 +285,18 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                           className="hidden"
                         />
                       </label>
-                    </>
-                  )}
-
-                  {step === "uploading" && (
-                    <div className="py-8">
-                      <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
-                      <p className="text-warm-500 font-medium">Uploading &amp; analyzing…</p>
-                      <p className="text-warm-400 text-xs mt-1">AI + public book databases</p>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {(step === "review" || step === "saving") && (
-                <div className="space-y-3">
-                  {localPreview && (
-                    <div className="flex justify-center mb-2">
-                      <img
-                        src={localPreview}
-                        alt="Book cover"
-                        className="h-36 rounded-lg shadow-sm object-cover"
-                      />
                     </div>
                   )}
 
+                  {/* ISBN + Lookup */}
                   <div>
                     <label className="block text-sm font-medium text-warm-700 mb-1">ISBN / Barcode</label>
                     <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={isbn}
-                        onChange={(e) => setIsbn(e.target.value)}
-                        disabled={step === "saving" || lookingUp}
-                        placeholder="e.g. 978-2-07-036822-8"
-                        className={inputCls}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleIsbnLookup}
+                      <input type="text" value={isbn} onChange={(e) => setIsbn(e.target.value)}
+                        disabled={step === "saving" || lookingUp} placeholder="e.g. 978-2-07-036822-8" className={inputCls} />
+                      <button type="button" onClick={handleIsbnLookup}
                         disabled={step === "saving" || lookingUp || !isbn.trim()}
-                        className="shrink-0 px-3 py-2 bg-warm-100 hover:bg-warm-200 text-warm-700 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
-                      >
+                        className="shrink-0 px-3 py-2 bg-warm-100 hover:bg-warm-200 text-warm-700 text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
                         {lookingUp ? "…" : "Lookup"}
                       </button>
                     </div>

@@ -65,12 +65,22 @@ export default function Home() {
             Your personal book collection.
           </p>
         </div>
-        <AddBookModal
-          onBookAdded={() => {
-            fetchBooks();
-            setToast({ message: "Book added successfully!", type: "success" });
-          }}
-        />
+        <div className="flex gap-2">
+          <AddBookModal
+            mode="manual"
+            onBookAdded={() => {
+              fetchBooks();
+              setToast({ message: "Book added!", type: "success" });
+            }}
+          />
+          <AddBookModal
+            mode="scan"
+            onBookAdded={() => {
+              fetchBooks();
+              setToast({ message: "Book added!", type: "success" });
+            }}
+          />
+        </div>
       </div>
 
       <div className="sticky top-0 z-10 bg-cream pt-2 pb-4">
