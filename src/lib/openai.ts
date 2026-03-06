@@ -1,7 +1,3 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-
 export interface BookMetadata {
   title: string;
   author: string;
@@ -15,17 +11,28 @@ export async function analyzeBookCover(
   base64Image: string,
   mimeType: string = "image/jpeg"
 ): Promise<BookMetadata> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) throw new Error("GROQ_API_KEY not configured");
 
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        data: base64Image,
-        mimeType,
-      },
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
     },
-    {
-      text: `You are a book identification expert. Carefully read ALL text visible in this image (front cover, back cover, spine, title page, etc.).
+    body: JSON.stringify({
+      model: "llama-3.2-11b-vision-preview",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: { url: `data:${mimeType};base64,${base64Image}` },
+            },
+            {
+              type: "text",
+              text: `You are a book identification expert. Carefully read ALL text visible in this image (front cover, back cover, spine, title page, etc.).
 
 From the extracted text, identify and categorize:
 - "title": the book title
@@ -36,13 +43,23 @@ From the extracted text, identify and categorize:
 - "section": either "Child" or "Adult" based on whether this is a children's book
 
 Return ONLY a JSON object with these 6 fields. If you cannot determine a field, use an empty string "". Return only the raw JSON, no markdown fences.`,
-    },
-  ]);
+            },
+          ],
+        },
+      ],
+      max_tokens: 500,
+      temperature: 0.1,
+    }),
+  });
 
-  const text = result.response.text().trim();
-  if (!text) {
-    throw new Error("No response from Gemini");
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Groq API error (${res.status}): ${err}`);
   }
+
+  const data = await res.json();
+  const text = data.choices?.[0]?.message?.content?.trim();
+  if (!text) throw new Error("No response from Groq Vision");
 
   try {
     const cleaned = text.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
