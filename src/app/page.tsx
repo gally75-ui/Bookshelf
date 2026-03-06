@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import AddBookModal from "@/components/AddBookModal";
 import ShelfScanner from "@/components/ShelfScanner";
 import SectionTabs, { type Section } from "@/components/SectionTabs";
+import CategoryChips from "@/components/CategoryChips";
 import SearchBar from "@/components/SearchBar";
 import BookGrid, { type Book } from "@/components/BookGrid";
 import BookDetail from "@/components/BookDetail";
@@ -13,6 +14,7 @@ export default function Home() {
   const [books, setBooks] = useState<Book[]>([]);
   const [loading, setLoading] = useState(true);
   const [section, setSection] = useState<Section>("All");
+  const [genreFilter, setGenreFilter] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -40,10 +42,17 @@ export default function Home() {
     fetchBooks();
   }, [fetchBooks]);
 
+  const availableGenres = useMemo(() => {
+    const sectionBooks = section === "All" ? books : books.filter((b) => b.section === section);
+    const genres = new Set(sectionBooks.map((b) => b.genre).filter(Boolean));
+    return Array.from(genres);
+  }, [books, section]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
     return books.filter((book) => {
       if (section !== "All" && book.section !== section) return false;
+      if (genreFilter && book.genre.toLowerCase() !== genreFilter.toLowerCase()) return false;
       if (
         q &&
         !book.title.toLowerCase().includes(q) &&
@@ -56,7 +65,7 @@ export default function Home() {
         return false;
       return true;
     });
-  }, [books, section, search]);
+  }, [books, section, genreFilter, search]);
 
   return (
     <main className="min-h-screen px-4 py-8 max-w-7xl mx-auto">
@@ -93,13 +102,19 @@ export default function Home() {
 
       <div className="sticky top-0 z-10 bg-cream pt-2 pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-          <SectionTabs active={section} onChange={setSection} />
+          <SectionTabs active={section} onChange={(s) => { setSection(s); setGenreFilter(null); }} />
           <SearchBar value={search} onChange={setSearch} />
         </div>
+        {!loading && availableGenres.length > 0 && (
+          <div className="mt-2">
+            <CategoryChips active={genreFilter} onChange={setGenreFilter} availableGenres={availableGenres} />
+          </div>
+        )}
         {!loading && (
           <p className="text-warm-400 text-xs mt-2">
             {filtered.length} {filtered.length === 1 ? "book" : "books"}
             {section !== "All" && ` in ${section}`}
+            {genreFilter && ` — ${genreFilter}`}
             {search && ` matching "${search}"`}
           </p>
         )}

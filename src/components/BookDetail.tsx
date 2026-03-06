@@ -3,7 +3,9 @@
 import { useState, useRef } from "react";
 import type { Book } from "./BookGrid";
 import { getImageSrc, getThumbnail } from "@/lib/image-url";
+import { getCategoryConfig } from "@/lib/category-theme";
 import { compressImage } from "@/lib/compress-image";
+import CategoryPicker from "./CategoryPicker";
 
 interface BookDetailProps {
   book: Book;
@@ -249,15 +251,10 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
                 <label className="block text-sm font-medium text-warm-700 mb-1">Author</label>
                 <input type="text" value={author} onChange={(e) => setAuthor(e.target.value)} disabled={busy} className={inputCls} />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1">Genre</label>
-                  <input type="text" value={genre} onChange={(e) => setGenre(e.target.value)} disabled={busy} className={inputCls} />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-warm-700 mb-1">Publisher</label>
-                  <input type="text" value={publisher} onChange={(e) => setPublisher(e.target.value)} disabled={busy} className={inputCls} />
-                </div>
+              <CategoryPicker value={genre} section={section} onChange={setGenre} disabled={busy} />
+              <div>
+                <label className="block text-sm font-medium text-warm-700 mb-1">Publisher</label>
+                <input type="text" value={publisher} onChange={(e) => setPublisher(e.target.value)} disabled={busy} className={inputCls} />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="col-span-2">
@@ -322,13 +319,30 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
               <h3 className="text-xl font-bold text-warm-800">{book.title}</h3>
               <p className="text-warm-600">{book.author}</p>
 
+              <div className="flex items-center gap-2 flex-wrap pt-1">
+                {book.genre && (() => {
+                  const gCfg = getCategoryConfig(book.genre, book.section);
+                  return (
+                    <span
+                      className="text-xs px-2.5 py-1 rounded-full font-medium"
+                      style={{ backgroundColor: gCfg.bg, color: gCfg.text }}
+                    >
+                      {book.genre}
+                    </span>
+                  );
+                })()}
+                <span
+                  className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                    book.section === "Child"
+                      ? "bg-amber-100 text-amber-700"
+                      : "bg-warm-100 text-warm-600"
+                  }`}
+                >
+                  {book.section === "Child" ? "Enfant" : "Adulte"}
+                </span>
+              </div>
+
               <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm pt-1">
-                {book.genre && (
-                  <div>
-                    <span className="text-warm-400">Genre: </span>
-                    <span className="text-warm-600">{book.genre}</span>
-                  </div>
-                )}
                 {book.publisher && (
                   <div>
                     <span className="text-warm-400">Publisher: </span>
@@ -347,18 +361,6 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
                     <span className="text-warm-600 font-mono text-xs">{book.isbn}</span>
                   </div>
                 )}
-              </div>
-
-              <div className="flex items-center gap-2 text-sm pt-1">
-                <span
-                  className={`px-2 py-0.5 rounded-full font-medium ${
-                    book.section === "Child"
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-warm-100 text-warm-600"
-                  }`}
-                >
-                  {book.section}
-                </span>
               </div>
 
               <div className="flex gap-3 pt-4">

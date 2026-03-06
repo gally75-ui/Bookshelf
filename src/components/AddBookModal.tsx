@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { compressImage } from "@/lib/compress-image";
+import CategoryPicker from "./CategoryPicker";
 
 type Mode = "scan" | "manual";
 type Step = "idle" | "uploading" | "analyzing" | "form" | "saving";
@@ -337,17 +338,12 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-sm font-medium text-warm-700 mb-1">Genre</label>
-                      <input type="text" value={genre} onChange={(e) => setGenre(e.target.value)}
-                        disabled={step === "saving"} placeholder="e.g. Fiction" className={inputCls} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-warm-700 mb-1">Publisher</label>
-                      <input type="text" value={publisher} onChange={(e) => setPublisher(e.target.value)}
-                        disabled={step === "saving"} placeholder="e.g. Gallimard" className={inputCls} />
-                    </div>
+                  <CategoryPicker value={genre} section={section} onChange={setGenre} disabled={step === "saving"} />
+
+                  <div>
+                    <label className="block text-sm font-medium text-warm-700 mb-1">Publisher</label>
+                    <input type="text" value={publisher} onChange={(e) => setPublisher(e.target.value)}
+                      disabled={step === "saving"} placeholder="e.g. Gallimard" className={inputCls} />
                   </div>
 
                   <div>
