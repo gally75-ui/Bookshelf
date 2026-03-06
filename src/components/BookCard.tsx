@@ -2,6 +2,7 @@
 
 import { getThumbnail } from "@/lib/image-url";
 import { getCategoryConfig } from "@/lib/category-theme";
+import BookPlaceholder from "./BookPlaceholder";
 
 interface BookCardProps {
   id: string;
@@ -26,21 +27,30 @@ export default function BookCard({
   customThumbnailUrl,
   onClick,
 }: BookCardProps) {
-  const thumbSrc = getThumbnail({ customThumbnailUrl, genre, section });
+  const hasCustom = Boolean(customThumbnailUrl);
   const cfg = getCategoryConfig(genre, section);
 
   return (
     <button
       onClick={() => onClick(id)}
       className="group text-left bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden"
-      style={{ borderLeft: `3px solid ${cfg.color}`, borderTop: '1px solid #e2d5c3', borderRight: '1px solid #e2d5c3', borderBottom: '1px solid #e2d5c3' }}
+      style={{
+        borderLeft: `3px solid ${cfg.color}`,
+        borderTop: "1px solid #e2d5c3",
+        borderRight: "1px solid #e2d5c3",
+        borderBottom: "1px solid #e2d5c3",
+      }}
     >
       <div className="aspect-[3/4] overflow-hidden bg-warm-100">
-        <img
-          src={thumbSrc}
-          alt={title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-        />
+        {hasCustom ? (
+          <img
+            src={getThumbnail({ customThumbnailUrl, genre, section })}
+            alt={title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          />
+        ) : (
+          <BookPlaceholder genre={genre} section={section} />
+        )}
       </div>
       <div className="p-2.5">
         <h3 className="font-semibold text-warm-800 text-xs leading-tight line-clamp-2">

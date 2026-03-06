@@ -6,6 +6,7 @@ import { getImageSrc, getThumbnail } from "@/lib/image-url";
 import { getCategoryConfig } from "@/lib/category-theme";
 import { compressImage } from "@/lib/compress-image";
 import CategoryPicker from "./CategoryPicker";
+import BookPlaceholder from "./BookPlaceholder";
 
 interface BookDetailProps {
   book: Book;
@@ -179,11 +180,15 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
                 <label className="block text-sm font-medium text-warm-700 mb-2">Thumbnail</label>
                 <div className="flex items-start gap-4">
                   <div className="w-20 h-28 rounded-lg overflow-hidden bg-warm-100 border border-warm-200 shrink-0">
-                    <img
-                      src={currentThumbSrc || placeholderSrc}
-                      alt="Thumbnail"
-                      className="w-full h-full object-cover"
-                    />
+                    {(currentThumbSrc) ? (
+                      <img
+                        src={currentThumbSrc}
+                        alt="Thumbnail"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <BookPlaceholder genre={genre} section={section} />
+                    )}
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex flex-wrap gap-2">
@@ -292,16 +297,21 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
             </div>
           ) : (
             <div className="space-y-3">
-              {/* View mode: show thumbnail + scanned image side by side */}
               <div className="flex gap-4 justify-center">
                 <div className="text-center">
-                  <img
-                    src={getThumbnail({ customThumbnailUrl: book.customThumbnailUrl, section: book.section })}
-                    alt="Thumbnail"
-                    className="h-40 rounded-lg shadow-sm object-cover mx-auto"
-                  />
+                  {book.customThumbnailUrl ? (
+                    <img
+                      src={getThumbnail({ customThumbnailUrl: book.customThumbnailUrl, genre: book.genre, section: book.section })}
+                      alt="Thumbnail"
+                      className="h-44 rounded-lg shadow-sm object-cover mx-auto"
+                    />
+                  ) : (
+                    <div className="h-44 w-32 rounded-lg shadow-sm overflow-hidden mx-auto border border-warm-200">
+                      <BookPlaceholder genre={book.genre} section={book.section} />
+                    </div>
+                  )}
                   <p className="text-warm-400 text-xs mt-1">
-                    {book.customThumbnailUrl ? "Custom thumbnail" : "Placeholder"}
+                    {book.customThumbnailUrl ? "Custom" : "Placeholder"}
                   </p>
                 </div>
                 {book.imagePath && (
@@ -309,9 +319,9 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
                     <img
                       src={getImageSrc(book.imagePath)}
                       alt="Scanned photo"
-                      className="h-40 rounded-lg shadow-sm object-contain mx-auto"
+                      className="h-44 rounded-lg shadow-sm object-contain mx-auto"
                     />
-                    <p className="text-warm-400 text-xs mt-1">Scanned photo</p>
+                    <p className="text-warm-400 text-xs mt-1">Photo scannee</p>
                   </div>
                 )}
               </div>
