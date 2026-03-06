@@ -26,6 +26,7 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
   const [genre, setGenre] = useState("");
   const [publisher, setPublisher] = useState("");
   const [isbn, setIsbn] = useState("");
+  const [volume, setVolume] = useState("");
   const [section, setSection] = useState<"Child" | "Adult">("Adult");
   const [lookingUp, setLookingUp] = useState(false);
 
@@ -42,6 +43,7 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
     setGenre("");
     setPublisher("");
     setIsbn("");
+    setVolume("");
     setSection("Adult");
     setLookingUp(false);
   }
@@ -107,6 +109,7 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
             setGenre(ai.genre || "");
             setPublisher(ai.publisher || "");
             setIsbn(ai.isbn || "");
+            setVolume(ai.volume || "");
             setSection(ai.section === "Child" ? "Child" : "Adult");
             if (ai.isbnSource) setInfo(`Enriched from ${ai.isbnSource}`);
           } else {
@@ -175,6 +178,7 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
             genre,
             publisher,
             isbn,
+            volume,
             section,
             imagePath,
             thumbnailPath,
@@ -320,10 +324,17 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
                       disabled={step === "saving"} placeholder="Book title" className={inputCls} />
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-warm-700 mb-1">Author</label>
-                    <input type="text" value={author} onChange={(e) => setAuthor(e.target.value)}
-                      disabled={step === "saving"} placeholder="Author name" className={inputCls} />
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-warm-700 mb-1">Author</label>
+                      <input type="text" value={author} onChange={(e) => setAuthor(e.target.value)}
+                        disabled={step === "saving"} placeholder="Author name" className={inputCls} />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-warm-700 mb-1">Volume</label>
+                      <input type="text" value={volume} onChange={(e) => setVolume(e.target.value)}
+                        disabled={step === "saving"} placeholder="e.g. 1" className={inputCls} />
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">

@@ -22,6 +22,7 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
   const [genre, setGenre] = useState(book.genre);
   const [publisher, setPublisher] = useState(book.publisher);
   const [isbn, setIsbn] = useState(book.isbn);
+  const [volume, setVolume] = useState(book.volume);
   const [section, setSection] = useState(book.section);
 
   async function handleSave() {
@@ -31,7 +32,7 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
       const res = await fetch(`/api/books/${book.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, author, genre, publisher, isbn, section }),
+        body: JSON.stringify({ title, author, genre, publisher, isbn, volume, section }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -69,6 +70,7 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
     setGenre(book.genre);
     setPublisher(book.publisher);
     setIsbn(book.isbn);
+    setVolume(book.volume);
     setSection(book.section);
     setEditing(false);
     setError(null);
@@ -131,10 +133,18 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
                     className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
                 </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-warm-700 mb-1">ISBN / Serial Number</label>
-                <input type="text" value={isbn} onChange={(e) => setIsbn(e.target.value)} disabled={busy}
-                  className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-warm-700 mb-1">ISBN</label>
+                  <input type="text" value={isbn} onChange={(e) => setIsbn(e.target.value)} disabled={busy}
+                    className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-warm-700 mb-1">Volume</label>
+                  <input type="text" value={volume} onChange={(e) => setVolume(e.target.value)} disabled={busy}
+                    placeholder="e.g. 1"
+                    className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50" />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-warm-700 mb-1">Section</label>
@@ -176,6 +186,12 @@ export default function BookDetail({ book, onClose, onUpdated }: BookDetailProps
                   <div>
                     <span className="text-warm-400">Publisher: </span>
                     <span className="text-warm-600">{book.publisher}</span>
+                  </div>
+                )}
+                {book.volume && (
+                  <div>
+                    <span className="text-warm-400">Volume: </span>
+                    <span className="text-warm-600">{book.volume}</span>
                   </div>
                 )}
                 {book.isbn && (

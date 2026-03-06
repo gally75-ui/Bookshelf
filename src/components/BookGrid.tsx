@@ -9,6 +9,7 @@ export interface Book {
   genre: string;
   publisher: string;
   isbn: string;
+  volume: string;
   section: string;
   imagePath: string;
   thumbnailPath: string;
@@ -43,6 +44,7 @@ export default function BookGrid({ books, onBookClick }: BookGridProps) {
           title={book.title}
           author={book.author}
           publisher={book.publisher}
+          volume={book.volume}
           genre={book.genre}
           section={book.section}
           thumbnailPath={book.thumbnailPath}

@@ -7,6 +7,7 @@ interface BookCardProps {
   title: string;
   author: string;
   publisher: string;
+  volume: string;
   genre: string;
   section: string;
   thumbnailPath: string;
@@ -18,6 +19,7 @@ export default function BookCard({
   title,
   author,
   publisher,
+  volume,
   genre,
   section,
   thumbnailPath,
@@ -37,7 +39,7 @@ export default function BookCard({
       </div>
       <div className="p-3">
         <h3 className="font-semibold text-warm-800 text-sm leading-tight line-clamp-2">
-          {title}
+          {title}{volume ? ` (Vol. ${volume})` : ""}
         </h3>
         <p className="text-warm-500 text-xs mt-1 truncate">{author}</p>
         {publisher && (

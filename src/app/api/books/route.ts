@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, author, genre, publisher, isbn, section, imagePath, thumbnailPath } = body;
+    const { title, author, genre, publisher, isbn, volume, section, imagePath, thumbnailPath } = body;
 
     if (!title || !imagePath || !thumbnailPath) {
       return NextResponse.json(
@@ -35,6 +35,7 @@ export async function POST(request: NextRequest) {
         genre: genre || "",
         publisher: publisher || "",
         isbn: isbn || "",
+        volume: volume || "",
         section: section === "Child" ? "Child" : "Adult",
         imagePath,
         thumbnailPath,

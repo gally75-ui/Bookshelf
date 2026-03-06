@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import AddBookModal from "@/components/AddBookModal";
+import ShelfScanner from "@/components/ShelfScanner";
 import SectionTabs, { type Section } from "@/components/SectionTabs";
 import SearchBar from "@/components/SearchBar";
 import BookGrid, { type Book } from "@/components/BookGrid";
@@ -49,7 +50,8 @@ export default function Home() {
         !book.author.toLowerCase().includes(q) &&
         !book.genre.toLowerCase().includes(q) &&
         !book.publisher.toLowerCase().includes(q) &&
-        !book.isbn.toLowerCase().includes(q)
+        !book.isbn.toLowerCase().includes(q) &&
+        !book.volume.toLowerCase().includes(q)
       )
         return false;
       return true;
@@ -78,6 +80,12 @@ export default function Home() {
             onBookAdded={() => {
               fetchBooks();
               setToast({ message: "Book added!", type: "success" });
+            }}
+          />
+          <ShelfScanner
+            onBooksAdded={(count) => {
+              fetchBooks();
+              setToast({ message: `${count} book${count !== 1 ? "s" : ""} added!`, type: "success" });
             }}
           />
         </div>

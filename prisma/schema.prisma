@@ -14,6 +14,7 @@ model Book {
   genre         String
   publisher     String   @default("")
   isbn          String   @default("")
+  volume        String   @default("")
   section       String
   imagePath     String
   thumbnailPath String
