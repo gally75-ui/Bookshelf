@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { compressImage } from "@/lib/compress-image";
 
 type Mode = "scan" | "manual";
-type Step = "idle" | "uploading" | "form" | "saving";
+type Step = "idle" | "uploading" | "analyzing" | "form" | "saving";
 
 interface AddBookModalProps {
   mode: Mode;
@@ -69,7 +69,6 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
       const compressed = await compressImage(file);
       const formData = new FormData();
       formData.append("image", compressed);
-      if (mode === "manual") formData.append("analyze", "false");
 
       let uploadRes: Response;
       try {
@@ -88,21 +87,35 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
         throw new Error(`Upload failed: ${detail}`);
       }
 
-      const data = await uploadRes.json();
-      setImagePath(data.imagePath);
-      setThumbnailPath(data.thumbnailPath);
+      const uploadData = await uploadRes.json();
+      setImagePath(uploadData.imagePath);
+      setThumbnailPath(uploadData.thumbnailPath);
 
       if (mode === "scan") {
-        setTitle(data.title || "");
-        setAuthor(data.author || "");
-        setGenre(data.genre || "");
-        setPublisher(data.publisher || "");
-        setIsbn(data.isbn || "");
-        setSection(data.section === "Child" ? "Child" : "Adult");
+        setStep("analyzing");
+        try {
+          const analyzeRes = await fetch("/api/analyze", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ imagePath: uploadData.imagePath }),
+          });
 
-        if (data.isbnSource) setInfo(`Enriched from ${data.isbnSource}`);
-        if (data.aiError) {
-          setError(`AI could not read the cover: ${data.aiError}. You can type an ISBN below or fill in the fields manually.`);
+          if (analyzeRes.ok) {
+            const ai = await analyzeRes.json();
+            setTitle(ai.title || "");
+            setAuthor(ai.author || "");
+            setGenre(ai.genre || "");
+            setPublisher(ai.publisher || "");
+            setIsbn(ai.isbn || "");
+            setSection(ai.section === "Child" ? "Child" : "Adult");
+            if (ai.isbnSource) setInfo(`Enriched from ${ai.isbnSource}`);
+          } else {
+            let detail = `HTTP ${analyzeRes.status}`;
+            try { const d = await analyzeRes.json(); detail = d.error || detail; } catch { /* not JSON */ }
+            setError(`AI analysis failed: ${detail}. You can type an ISBN below or fill in the fields manually.`);
+          }
+        } catch (analyzeErr) {
+          setError(`AI analysis error: ${analyzeErr instanceof Error ? analyzeErr.message : "Unknown"}. Fill in the fields manually.`);
         }
       }
 
@@ -185,7 +198,7 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
     }
   }
 
-  const isProcessing = step === "uploading" || step === "saving";
+  const isProcessing = step === "uploading" || step === "analyzing" || step === "saving";
   const inputCls = "w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50";
 
   const isScan = mode === "scan";
@@ -251,15 +264,14 @@ export default function AddBookModal({ mode, onBookAdded }: AddBookModalProps) {
                 </div>
               )}
 
-              {/* Uploading spinner */}
-              {step === "uploading" && (
+              {(step === "uploading" || step === "analyzing") && (
                 <div className="text-center py-8">
                   <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
                   <p className="text-warm-500 font-medium">
-                    {isScan ? "Uploading & analyzing…" : "Uploading image…"}
+                    {step === "uploading" ? "Uploading image…" : "AI is reading the cover…"}
                   </p>
-                  {isScan && (
-                    <p className="text-warm-400 text-xs mt-1">AI + public book databases</p>
+                  {step === "analyzing" && (
+                    <p className="text-warm-400 text-xs mt-1">Extracting title, author, publisher…</p>
                   )}
                 </div>
               )}

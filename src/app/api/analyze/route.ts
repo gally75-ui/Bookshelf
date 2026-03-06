@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeBookCover } from "@/lib/openai";
+import { lookupIsbn } from "@/lib/isbn-lookup";
 import { get } from "@vercel/blob";
+
+export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +19,7 @@ export async function POST(request: NextRequest) {
     const result = await get(imagePath, { access: "private" });
     if (result?.statusCode !== 200 || !result.stream) {
       return NextResponse.json(
-        { error: "Image file not found" },
+        { error: `Could not read image from storage (status: ${result?.statusCode})` },
         { status: 404 }
       );
     }
@@ -32,32 +35,31 @@ export async function POST(request: NextRequest) {
     const base64 = buffer.toString("base64");
     const contentType = result.blob.contentType || "image/jpeg";
 
-    const metadata = await analyzeBookCover(base64, contentType);
+    let metadata = await analyzeBookCover(base64, contentType);
+    let isbnSource: string | null = null;
 
-    return NextResponse.json(metadata);
+    if (metadata.isbn) {
+      try {
+        const dbResult = await lookupIsbn(metadata.isbn);
+        if (dbResult) {
+          isbnSource = "Open Library / Google Books";
+          metadata = {
+            ...metadata,
+            title: dbResult.title || metadata.title,
+            author: dbResult.author || metadata.author,
+            publisher: dbResult.publisher || metadata.publisher,
+            genre: dbResult.genre || metadata.genre,
+          };
+        }
+      } catch (err) {
+        console.error("ISBN lookup failed (non-blocking):", err);
+      }
+    }
+
+    return NextResponse.json({ ...metadata, isbnSource });
   } catch (error) {
     console.error("Analyze failed:", error);
-
-    const message =
-      error instanceof Error ? error.message : "Analysis failed";
-
-    if (message.includes("rate limit") || message.includes("429")) {
-      return NextResponse.json(
-        { error: "Rate limited by OpenAI. Please try again in a moment." },
-        { status: 429 }
-      );
-    }
-
-    if (message.includes("parse")) {
-      return NextResponse.json(
-        { error: "Could not extract book details from this image. Try a clearer photo." },
-        { status: 422 }
-      );
-    }
-
-    return NextResponse.json(
-      { error: "Failed to analyze image. Please try again." },
-      { status: 500 }
-    );
+    const message = error instanceof Error ? error.message : "Analysis failed";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
