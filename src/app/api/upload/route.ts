@@ -3,6 +3,7 @@ import { put } from "@vercel/blob";
 import { randomUUID } from "crypto";
 import { generateThumbnail } from "@/lib/thumbnails";
 import { analyzeBookCover } from "@/lib/openai";
+import { lookupIsbn } from "@/lib/isbn-lookup";
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,11 +48,28 @@ export async function POST(request: NextRequest) {
       aiError = err instanceof Error ? err.message : "AI analysis failed";
     }
 
+    let isbnSource: string | null = null;
+    if (metadata.isbn) {
+      try {
+        const dbResult = await lookupIsbn(metadata.isbn);
+        if (dbResult) {
+          isbnSource = "Open Library / Google Books";
+          metadata.title = dbResult.title || metadata.title;
+          metadata.author = dbResult.author || metadata.author;
+          metadata.publisher = dbResult.publisher || metadata.publisher;
+          metadata.genre = dbResult.genre || metadata.genre;
+        }
+      } catch (err) {
+        console.error("ISBN lookup failed:", err);
+      }
+    }
+
     return NextResponse.json({
       imagePath: imageBlob.url,
       thumbnailPath: thumbBlob.url,
       ...metadata,
       aiError,
+      isbnSource,
     });
   } catch (error) {
     console.error("Upload failed:", error);

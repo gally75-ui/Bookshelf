@@ -12,6 +12,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [imagePath, setImagePath] = useState("");
@@ -23,10 +24,12 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
   const [publisher, setPublisher] = useState("");
   const [isbn, setIsbn] = useState("");
   const [section, setSection] = useState<"Child" | "Adult">("Adult");
+  const [lookingUp, setLookingUp] = useState(false);
 
   function reset() {
     setStep("idle");
     setError(null);
+    setInfo(null);
     setImagePath("");
     setThumbnailPath("");
     if (localPreview) URL.revokeObjectURL(localPreview);
@@ -37,6 +40,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     setPublisher("");
     setIsbn("");
     setSection("Adult");
+    setLookingUp(false);
   }
 
   function handleClose() {
@@ -49,6 +53,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     if (!file) return;
 
     setError(null);
+    setInfo(null);
     setLocalPreview(URL.createObjectURL(file));
 
     setStep("uploading");
@@ -76,8 +81,11 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
       setIsbn(data.isbn || "");
       setSection(data.section === "Child" ? "Child" : "Adult");
 
+      if (data.isbnSource) {
+        setInfo(`Enriched from ${data.isbnSource}`);
+      }
       if (data.aiError) {
-        setError(`AI could not read the cover: ${data.aiError}. Fill in the fields manually.`);
+        setError(`AI could not read the cover: ${data.aiError}. You can type an ISBN below to look up the book.`);
       }
 
       setStep("review");
@@ -87,6 +95,31 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
     }
 
     if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleIsbnLookup() {
+    if (!isbn.trim()) return;
+    setLookingUp(true);
+    setError(null);
+    setInfo(null);
+
+    try {
+      const res = await fetch(`/api/isbn?isbn=${encodeURIComponent(isbn.trim())}`);
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "ISBN not found");
+      }
+      const data = await res.json();
+      if (data.title) setTitle(data.title);
+      if (data.author) setAuthor(data.author);
+      if (data.publisher) setPublisher(data.publisher);
+      if (data.genre) setGenre(data.genre);
+      setInfo("Fields updated from Open Library / Google Books");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Lookup failed");
+    } finally {
+      setLookingUp(false);
+    }
   }
 
   async function handleSave() {
@@ -123,6 +156,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
   }
 
   const isProcessing = step === "uploading" || step === "saving";
+  const inputCls = "w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50";
 
   return (
     <>
@@ -153,6 +187,11 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                   {error}
                 </div>
               )}
+              {info && (
+                <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
+                  {info}
+                </div>
+              )}
 
               {(step === "idle" || step === "uploading") && (
                 <div className="text-center">
@@ -179,7 +218,7 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                     <div className="py-8">
                       <div className="animate-spin w-8 h-8 border-[3px] border-warm-300 border-t-accent rounded-full mx-auto mb-3" />
                       <p className="text-warm-500 font-medium">Uploading &amp; analyzing…</p>
-                      <p className="text-warm-400 text-xs mt-1">AI is reading all text on the cover</p>
+                      <p className="text-warm-400 text-xs mt-1">AI + public book databases</p>
                     </div>
                   )}
                 </div>
@@ -198,109 +237,73 @@ export default function AddBookModal({ onBookAdded }: AddBookModalProps) {
                   )}
 
                   <div>
+                    <label className="block text-sm font-medium text-warm-700 mb-1">ISBN / Barcode</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={isbn}
+                        onChange={(e) => setIsbn(e.target.value)}
+                        disabled={step === "saving" || lookingUp}
+                        placeholder="e.g. 978-2-07-036822-8"
+                        className={inputCls}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleIsbnLookup}
+                        disabled={step === "saving" || lookingUp || !isbn.trim()}
+                        className="shrink-0 px-3 py-2 bg-warm-100 hover:bg-warm-200 text-warm-700 text-sm font-medium rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        {lookingUp ? "…" : "Lookup"}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium text-warm-700 mb-1">Title</label>
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      disabled={step === "saving"}
-                      placeholder="Book title"
-                      className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                    />
+                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)}
+                      disabled={step === "saving"} placeholder="Book title" className={inputCls} />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-warm-700 mb-1">Author</label>
-                    <input
-                      type="text"
-                      value={author}
-                      onChange={(e) => setAuthor(e.target.value)}
-                      disabled={step === "saving"}
-                      placeholder="Author name"
-                      className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                    />
+                    <input type="text" value={author} onChange={(e) => setAuthor(e.target.value)}
+                      disabled={step === "saving"} placeholder="Author name" className={inputCls} />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-warm-700 mb-1">Genre</label>
-                      <input
-                        type="text"
-                        value={genre}
-                        onChange={(e) => setGenre(e.target.value)}
-                        disabled={step === "saving"}
-                        placeholder="e.g. Fiction"
-                        className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                      />
+                      <input type="text" value={genre} onChange={(e) => setGenre(e.target.value)}
+                        disabled={step === "saving"} placeholder="e.g. Fiction" className={inputCls} />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-warm-700 mb-1">Publisher</label>
-                      <input
-                        type="text"
-                        value={publisher}
-                        onChange={(e) => setPublisher(e.target.value)}
-                        disabled={step === "saving"}
-                        placeholder="e.g. Gallimard"
-                        className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                      />
+                      <input type="text" value={publisher} onChange={(e) => setPublisher(e.target.value)}
+                        disabled={step === "saving"} placeholder="e.g. Gallimard" className={inputCls} />
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-warm-700 mb-1">ISBN / Serial Number</label>
-                    <input
-                      type="text"
-                      value={isbn}
-                      onChange={(e) => setIsbn(e.target.value)}
-                      disabled={step === "saving"}
-                      placeholder="e.g. 978-2-07-036822-8"
-                      className="w-full border border-warm-300 rounded-lg px-3 py-2 text-warm-900 focus:outline-none focus:ring-2 focus:ring-accent/30 disabled:opacity-50"
-                    />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-warm-700 mb-1">Section</label>
                     <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setSection("Adult")}
-                        disabled={step === "saving"}
-                        className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-                          section === "Adult"
-                            ? "bg-warm-700 text-white"
-                            : "bg-warm-100 text-warm-600 hover:bg-warm-200"
-                        } disabled:opacity-50`}
-                      >
+                      <button type="button" onClick={() => setSection("Adult")} disabled={step === "saving"}
+                        className={`flex-1 py-2 rounded-lg font-medium transition-colors ${section === "Adult" ? "bg-warm-700 text-white" : "bg-warm-100 text-warm-600 hover:bg-warm-200"} disabled:opacity-50`}>
                         Adult
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setSection("Child")}
-                        disabled={step === "saving"}
-                        className={`flex-1 py-2 rounded-lg font-medium transition-colors ${
-                          section === "Child"
-                            ? "bg-warm-700 text-white"
-                            : "bg-warm-100 text-warm-600 hover:bg-warm-200"
-                        } disabled:opacity-50`}
-                      >
+                      <button type="button" onClick={() => setSection("Child")} disabled={step === "saving"}
+                        className={`flex-1 py-2 rounded-lg font-medium transition-colors ${section === "Child" ? "bg-warm-700 text-white" : "bg-warm-100 text-warm-600 hover:bg-warm-200"} disabled:opacity-50`}>
                         Child
                       </button>
                     </div>
                   </div>
 
                   <div className="flex gap-3 pt-2">
-                    <button
-                      onClick={handleClose}
-                      disabled={step === "saving"}
-                      className="flex-1 py-2.5 rounded-lg font-medium bg-warm-100 text-warm-600 hover:bg-warm-200 transition-colors disabled:opacity-50"
-                    >
+                    <button onClick={handleClose} disabled={step === "saving"}
+                      className="flex-1 py-2.5 rounded-lg font-medium bg-warm-100 text-warm-600 hover:bg-warm-200 transition-colors disabled:opacity-50">
                       Cancel
                     </button>
-                    <button
-                      onClick={handleSave}
-                      disabled={step === "saving"}
-                      className="flex-1 py-2.5 rounded-lg font-semibold bg-accent hover:bg-accent-light text-white transition-colors disabled:opacity-50"
-                    >
+                    <button onClick={handleSave} disabled={step === "saving"}
+                      className="flex-1 py-2.5 rounded-lg font-semibold bg-accent hover:bg-accent-light text-white transition-colors disabled:opacity-50">
                       {step === "saving" ? "Saving…" : "Save Book"}
                     </button>
                   </div>
